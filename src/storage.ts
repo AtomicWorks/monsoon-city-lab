@@ -73,10 +73,8 @@ export async function restore(key = "current"): Promise<Scenario | null> {
           backupKey = prefix + Date.now();
         store.put(r.result, backupKey);
         // Keep the newest few. Millisecond timestamps share a width, so key
-        // order is chronological.
-        const keys = store.getAllKeys(
-          IDBKeyRange.bound(prefix, prefix + "￿"),
-        );
+        // order is chronological; ":" sorts right after "9".
+        const keys = store.getAllKeys(IDBKeyRange.bound(prefix, prefix + ":"));
         keys.onsuccess = () => {
           for (const old of keys.result.slice(0, -BACKUPS_KEPT))
             store.delete(old);
@@ -126,7 +124,10 @@ export async function library(): Promise<{
           unreadable++;
         }
       }
-      resolve({ plans: plans.sort((a, b) => b.updated - a.updated), unreadable });
+      resolve({
+        plans: plans.sort((a, b) => b.updated - a.updated),
+        unreadable,
+      });
     };
     r.onerror = () => reject(r.error);
     tx.oncomplete = () => db.close();

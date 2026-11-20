@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  Suspense,
+  lazy,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createRoot } from "react-dom/client";
 import {
   ArrowDownToLine,
@@ -40,7 +47,17 @@ import {
   type EditOperation,
   type EditHistory,
 } from "./editing";
-import City, { type CameraBus } from "./City";
+import type { CameraBus } from "./City";
+// three.js is most of the download; the panels render while it loads.
+const City = lazy(() => import("./City"));
+const PlanningLab = lazy(() => import("./PlanningLab"));
+const sceneLoading = (
+  <div className="city">
+    <div className="fallback" role="status">
+      Loading the 3D district…
+    </div>
+  </div>
+);
 import GraphicsPanel from "./GraphicsPanel";
 import FloodInspector from "./FloodInspector";
 import {
@@ -50,7 +67,6 @@ import {
   type Quality,
 } from "./graphics";
 import ReleasePanel from "./ReleasePanel";
-import PlanningLab from "./PlanningLab";
 import ExperiencePanel, {
   ReplayControls,
   SharedScenarioDialog,
@@ -86,12 +102,8 @@ import {
   type Scenario,
   type Tool,
 } from "./engine";
-import {
-  UnreadableScenarioError,
-  restore,
-  save,
-  writePlan,
-} from "./storage";
+import { UnreadableScenarioError, restore, save, writePlan } from "./storage";
+import "./fonts/fonts.css";
 import "./style.css";
 import "./district.css";
 const fmt = (v: number, d = 0) =>
@@ -1530,60 +1542,10 @@ function App() {
               className={`map-canvases ${compare ? "split" : ""} ${compare && reveal ? "reveal" : ""}`}
             >
               <div className="map-view">
-                <City
-                  layout={compare ? baseScenario.layout : s.layout}
-                  construction={compare ? [] : construction}
-                  districtBrush={
-                    tab === "district" && !s.challenge ? brush : null
-                  }
-                  comparison={compare}
-                  layer={layer}
-                  traffic={traffic}
-                  minute={index}
-                  moveId={operation?.kind === "move" ? operation.id : undefined}
-                  placementItems={s.interventions}
-                  preview={locator && tool ? xy : null}
-                  quality={tier}
-                  weather={weather}
-                  activity={activity}
-                  draining={compare ? baseFrame?.draining : frame?.draining}
-                  animateActivity={playing || (!!cine && !cine.paused)}
-                  shot={shot}
-                  depth={compare ? baseFrame?.depth : frame?.depth}
-                  difference={!compare ? delta : undefined}
-                  items={compare ? [] : s.interventions}
-                  select={select}
-                  selected={selected}
-                  rain={
-                    playing || (cine && !cine.paused)
-                      ? rainfall(s, index * 60)
-                      : 0
-                  }
-                  reduced={reduced}
-                  top={top}
-                  bus={bus.current}
-                  placing={!!tool || tab === "district"}
-                  tool={tool}
-                  focus={focus}
-                  route={compare ? routes.a : routes.b}
-                  connected={
-                    compare ? !!routes.baseConnected : routes.connected
-                  }
-                />
-                {compare && <span className="view-label">A / BASELINE</span>}
-              </div>
-              {compare && (
-                <div
-                  className="map-view"
-                  style={
-                    reveal
-                      ? { clipPath: `inset(0 0 0 ${revealPosition}%)` }
-                      : undefined
-                  }
-                >
+                <Suspense fallback={sceneLoading}>
                   <City
-                    layout={s.layout}
-                    construction={construction}
+                    layout={compare ? baseScenario.layout : s.layout}
+                    construction={compare ? [] : construction}
                     districtBrush={
                       tab === "district" && !s.challenge ? brush : null
                     }
@@ -1599,11 +1561,12 @@ function App() {
                     quality={tier}
                     weather={weather}
                     activity={activity}
-                    draining={frame?.draining}
+                    draining={compare ? baseFrame?.draining : frame?.draining}
                     animateActivity={playing || (!!cine && !cine.paused)}
                     shot={shot}
-                    depth={frame?.depth}
-                    items={s.interventions}
+                    depth={compare ? baseFrame?.depth : frame?.depth}
+                    difference={!compare ? delta : undefined}
+                    items={compare ? [] : s.interventions}
                     select={select}
                     selected={selected}
                     rain={
@@ -1617,9 +1580,64 @@ function App() {
                     placing={!!tool || tab === "district"}
                     tool={tool}
                     focus={focus}
-                    route={routes.b}
-                    connected={routes.connected}
+                    route={compare ? routes.a : routes.b}
+                    connected={
+                      compare ? !!routes.baseConnected : routes.connected
+                    }
                   />
+                </Suspense>
+                {compare && <span className="view-label">A / BASELINE</span>}
+              </div>
+              {compare && (
+                <div
+                  className="map-view"
+                  style={
+                    reveal
+                      ? { clipPath: `inset(0 0 0 ${revealPosition}%)` }
+                      : undefined
+                  }
+                >
+                  <Suspense fallback={sceneLoading}>
+                    <City
+                      layout={s.layout}
+                      construction={construction}
+                      districtBrush={
+                        tab === "district" && !s.challenge ? brush : null
+                      }
+                      comparison={compare}
+                      layer={layer}
+                      traffic={traffic}
+                      minute={index}
+                      moveId={
+                        operation?.kind === "move" ? operation.id : undefined
+                      }
+                      placementItems={s.interventions}
+                      preview={locator && tool ? xy : null}
+                      quality={tier}
+                      weather={weather}
+                      activity={activity}
+                      draining={frame?.draining}
+                      animateActivity={playing || (!!cine && !cine.paused)}
+                      shot={shot}
+                      depth={frame?.depth}
+                      items={s.interventions}
+                      select={select}
+                      selected={selected}
+                      rain={
+                        playing || (cine && !cine.paused)
+                          ? rainfall(s, index * 60)
+                          : 0
+                      }
+                      reduced={reduced}
+                      top={top}
+                      bus={bus.current}
+                      placing={!!tool || tab === "district"}
+                      tool={tool}
+                      focus={focus}
+                      route={routes.b}
+                      connected={routes.connected}
+                    />
+                  </Suspense>
                   <span className="view-label improved">B / YOUR DESIGN</span>
                 </div>
               )}
@@ -2122,25 +2140,27 @@ function App() {
         {notice}
       </div>
       {planning && (
-        <PlanningLab
-          s={s}
-          results={valid ? results : null}
-          close={() => setPlanning(false)}
-          apply={(value) => {
-            setS(value);
-            setTool(null);
-            setOperation(null);
-            setSelected(null);
-            editHistory.current = { past: [], future: [] };
-            districtHistory.current = { past: [], future: [] };
-            setTutorial(false);
-            setConstruction([]);
-            setOperation(null);
-            setCompare(true);
-            setDifference(false);
-            run(value);
-          }}
-        />
+        <Suspense fallback={null}>
+          <PlanningLab
+            s={s}
+            results={valid ? results : null}
+            close={() => setPlanning(false)}
+            apply={(value) => {
+              setS(value);
+              setTool(null);
+              setOperation(null);
+              setSelected(null);
+              editHistory.current = { past: [], future: [] };
+              districtHistory.current = { past: [], future: [] };
+              setTutorial(false);
+              setConstruction([]);
+              setOperation(null);
+              setCompare(true);
+              setDifference(false);
+              run(value);
+            }}
+          />
+        </Suspense>
       )}
       {incoming && ready && (
         <SharedScenarioDialog
