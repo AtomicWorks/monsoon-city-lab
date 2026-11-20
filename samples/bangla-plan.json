@@ -1,0 +1,1 @@
+{"version":1,"model":"monsoon-1.0","name":"Bangla Quarter","storm":"burst","intensity":85,"duration":60,"blockage":15,"outlet":4,"interventions":[{"id":"garden-east","type":"garden","x":62,"y":68},{"id":"basin-east","type":"basin","x":59,"y":63},{"id":"paving-west","type":"paving","x":29,"y":39},{"id":"drain-east","type":"drain","x":69,"y":60}]}

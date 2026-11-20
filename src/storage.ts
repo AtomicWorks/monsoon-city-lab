@@ -1,4 +1,9 @@
-import { validate, type Scenario } from "./engine";
+import {
+  currentScenarioName,
+  validate,
+  validateLayout,
+  type Scenario,
+} from "./engine";
 import type { Summary } from "./planning";
 export type SavedPlan = {
   id: string;
@@ -60,8 +65,22 @@ export async function library(): Promise<SavedPlan[]> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction("library"),
       r = tx.objectStore("library").getAll();
-    r.onsuccess = () =>
-      resolve((r.result as SavedPlan[]).sort((a, b) => b.updated - a.updated));
+    r.onsuccess = () => {
+      try {
+        const plans = (r.result as SavedPlan[]).map((plan) => ({
+          ...plan,
+          title: currentScenarioName(plan.title),
+          scenario: {
+            ...plan.scenario,
+            name: currentScenarioName(plan.scenario.name),
+            layout: validateLayout(plan.scenario.layout),
+          },
+        }));
+        resolve(plans.sort((a, b) => b.updated - a.updated));
+      } catch (error) {
+        reject(error);
+      }
+    };
     r.onerror = () => reject(r.error);
     tx.oncomplete = () => db.close();
   });

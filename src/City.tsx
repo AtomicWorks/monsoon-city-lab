@@ -319,9 +319,7 @@ export default function City(props: Props) {
     scene.add(splashes);
     let wetCells: number[] = [];
     for (const [label, x, y] of [
-      ["SHONAR CLINIC", 64, 64],
-      ["QUARTER SCHOOL", 24, 34],
-      ["EAST BAZAAR", 74, 24],
+      ...LANDMARKS.map(({ name, x, y }) => [name.toUpperCase(), x, y] as const),
       ["RETENTION POND", 83, 68],
     ] as const) {
       const c = document.createElement("canvas");

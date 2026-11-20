@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   DEFAULT,
+  DEFAULT_PRESET,
   MODEL,
   N,
   DISTRICT,
@@ -28,7 +29,7 @@ test("legacy scenarios keep the original district and custom maps cannot earn mi
   assert.equal(districtFor(old.layout), DISTRICT);
   const s = {
     ...missionScenario("services"),
-    layout: { preset: "shonar" as const, edits: [] },
+    layout: { preset: DEFAULT_PRESET, edits: [] },
   };
   assert.throws(() => validate(s), /Missions/);
   assert.equal(matchesMission(s), false);
@@ -124,6 +125,16 @@ test("layout share links round trip and legacy links remain readable", () => {
     .replaceAll("/", "_")
     .replace(/=+$/, "");
   assert.equal(decodeScenario(old).layout, undefined);
+  const legacyLayout = { preset: "shonar", edits: s.layout!.edits };
+  const oldDistrict = btoa(
+    JSON.stringify([2, raw[1], "Shonar Quarter", ...raw.slice(3), legacyLayout]),
+  )
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replace(/=+$/, "");
+  const renamed = decodeScenario(oldDistrict);
+  assert.equal(renamed.name, "Bangla Quarter");
+  assert.deepEqual(renamed.layout, { ...legacyLayout, preset: DEFAULT_PRESET });
   assert.notEqual(scenarioKey(s), scenarioKey({ ...s, layout: undefined }));
 });
 test("custom hydrology conserves rainfall and the first experiment increases absorption", () => {

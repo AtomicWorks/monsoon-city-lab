@@ -48,8 +48,10 @@ export const TOOLS: Record<
 };
 export type Intervention = { id: string; type: Tool; x: number; y: number };
 export type LandKind = 0 | 1 | 4 | 5;
+export const DEFAULT_PRESET = "bangla";
+const DISTRICT_NAME = "Bangla Quarter";
 export type Layout = {
-  preset: "shonar" | "dense" | "green" | "industrial";
+  preset: typeof DEFAULT_PRESET | "dense" | "green" | "industrial";
   edits: { x: number; y: number; kind: LandKind }[];
 };
 export type Scenario = {
@@ -70,7 +72,7 @@ export type Scenario = {
 export const DEFAULT: Scenario = {
   version: 1,
   model: MODEL,
-  name: "Shonar Quarter",
+  name: DISTRICT_NAME,
   storm: "burst",
   intensity: 85,
   duration: 60,
@@ -157,6 +159,9 @@ export const DISTRICT = district();
 export function cost(items: Intervention[]) {
   return items.reduce((s, t) => s + TOOLS[t.type].cost, 0);
 }
+export function currentScenarioName(name: string) {
+  return name === "Shonar Quarter" ? DISTRICT_NAME : name;
+}
 export function validate(input: unknown): Scenario {
   if (!input || typeof input !== "object")
     throw Error("This file is not a MONSOON scenario.");
@@ -240,6 +245,7 @@ export function validate(input: unknown): Scenario {
   return {
     ...structuredClone(s),
     model: MODEL,
+    name: currentScenarioName(s.name),
     ...(layout ? { layout } : {}),
     recovery: s.recovery ?? 0,
     infiltrationFactor: s.infiltrationFactor ?? 1,
@@ -501,8 +507,8 @@ export function access(depth: Float32Array, map: District = DISTRICT) {
 }
 
 export const PRESETS = {
-  shonar: {
-    name: "Shonar Quarter",
+  [DEFAULT_PRESET]: {
+    name: DISTRICT_NAME,
     description: "The original district and mission map.",
   },
   dense: {
@@ -538,9 +544,11 @@ export function validateLayout(input: unknown): Layout | undefined {
   if (input === undefined) return undefined;
   if (!input || typeof input !== "object")
     throw Error("Invalid district layout.");
-  const v = input as Layout;
+  const v = input as { preset: string; edits: Layout["edits"] };
+  // Earlier saves and share links used this key for the original district.
+  const preset = v.preset === "shonar" ? DEFAULT_PRESET : v.preset;
   if (
-    !Object.hasOwn(PRESETS, v.preset) ||
+    !Object.hasOwn(PRESETS, preset) ||
     !Array.isArray(v.edits) ||
     v.edits.length > 100
   )
@@ -565,11 +573,11 @@ export function validateLayout(input: unknown): Layout | undefined {
       return { x: e.x, y: e.y, kind: e.kind };
     })
     .sort((a, b) => a.y - b.y || a.x - b.x);
-  return { preset: v.preset, edits };
+  return { preset: preset as Layout["preset"], edits };
 }
 const districtCache = new Map<string, District>();
 export function districtFor(layout?: Layout): District {
-  if (!layout || (layout.preset === "shonar" && !layout.edits.length))
+  if (!layout || (layout.preset === DEFAULT_PRESET && !layout.edits.length))
     return DISTRICT;
   const key = JSON.stringify(layout);
   const cached = districtCache.get(key);
@@ -600,7 +608,7 @@ export function districtFor(layout?: Layout): District {
           map.kind[i] === 1 && x % 20 === 9 && y % 10 === 0 ? 1 : 0;
       }
   };
-  if (layout.preset !== "shonar")
+  if (layout.preset !== DEFAULT_PRESET)
     for (let y = 0; y < 10; y++)
       for (let x = 0; x < 10; x++) {
         const kind: LandKind =
@@ -647,7 +655,7 @@ export function paintLayout(
     ![0, 1, 2].includes(radius)
   )
     throw Error("Choose a block from 0 to 9.");
-  const layout = s.layout ?? { preset: "shonar" as const, edits: [] };
+  const layout = s.layout ?? { preset: DEFAULT_PRESET, edits: [] };
   const edits = new Map(layout.edits.map((e) => [e.y * 10 + e.x, e]));
   let changed = 0;
   for (let by = Math.max(0, y - radius); by <= Math.min(9, y + radius); by++)

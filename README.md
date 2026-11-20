@@ -1,11 +1,11 @@
 # MONSOON — City Resilience Lab
 
-An original interactive planning laboratory for Shonar Quarter, a fictional Bangladesh-inspired neighborhood. Built for Asifur Rahman Bhuiyan. Release 08: Shape the City (model monsoon-1.3).
+An original interactive planning laboratory for Bangla Quarter, a fictional Bangladesh-inspired neighborhood. Built for Asifur Rahman Bhuiyan. Release 08: Shape the City (model monsoon-1.3).
 
 ## Release 08
 
 - **District editor** paints 100 m blocks as parks, roads, buildings or sealed ground. Choose a 1-block, 3 × 3 or 5 × 5 brush, select a location on the minimap or city, preview, then apply. Keyboard coordinate fields and district undo/redo support precise editing. Pond and landmark blocks remain protected; mission maps stay fixed.
-- **Three neighborhood presets** add a dense urban quarter, garden neighborhood and industrial district alongside original Shonar Quarter. Each has distinct land use. Preview before applying; application clears improvements, while undo restores the previous layout and placements. Painted blocks can be reset separately.
+- **Three neighborhood presets** add a dense urban quarter, garden neighborhood and industrial district alongside the original Bangla Quarter. Each has distinct land use. Preview before applying; application clears improvements, while undo restores the previous layout and placements. Painted blocks can be reset separately.
 - **Model integration** carries layouts through soil absorption, roof runoff, drainage, connected roads, service routes, traffic, inspectors and result maps. The matched baseline is the same preset without painted blocks or improvements. The 10 m physics grid, terrain and existing mission fixtures are preserved. Land-use editing is an unpriced planning experiment, separate from the 100-credit intervention budget.
 - **Construction animation** grows changed buildings and trees into place while ground tiles settle over 650 ms. Reduced motion applies changes immediately. Current camera pose survives layout changes.
 - **First green block** is a hands-on experiment that backs up the current plan, opens the industrial preset, guides one park conversion and shows measured absorption and peak flooding differences. The standard example absorbs about 85 m³ more water and reduces peak flooded area by 0.03 ha; results depend on settings and any additional edits.
@@ -77,7 +77,7 @@ Open **Planning lab** from the studio header.
 - Landmark focus moves the camera, with immediate movement under reduced effects. Clinic cross, school solar panels and market awnings distinguish the landmarks. Hovering an intervention shows its radius and invalid placement state before clicking.
 - Starting a mission preserves the sandbox in a separate IndexedDB record. Return to saved sandbox restores it. Scenario export/import includes recovery and mission identity. Legacy model-1.0 files migrate with zero recovery to preserve their original horizon.
 
-For a reproducible demonstration, import `samples/clinic-rescue.json`, run it, and inspect Shonar Clinic. The 92-credit solution reduces peak district flooded area by approximately 13.96%, lowers peak entrance depth from 35.5 cm to 19.0 cm and restores access 51 minutes after rainfall ends. The baseline remains disconnected at run end. These are fictional-model results.
+For a reproducible demonstration, import `samples/clinic-rescue.json`, run it, and inspect Banglar Clinic. The 92-credit solution reduces peak district flooded area by approximately 13.96%, lowers peak entrance depth from 35.5 cm to 19.0 cm and restores access 51 minutes after rainfall ends. The baseline remains disconnected at run end. These are fictional-model results.
 
 ## Run
 

@@ -11,7 +11,7 @@ import {
 export const LANDMARKS = [
   {
     id: "clinic",
-    name: "Shonar Clinic",
+    name: "Banglar Clinic",
     short: "Clinic",
     x: 64,
     y: 64,

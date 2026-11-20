@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import {
+  DEFAULT_PRESET,
   PRESETS,
   baselineScenario,
   districtFor,
@@ -66,12 +67,12 @@ export default function DistrictPanel({
   compare: () => void;
 }) {
   const [preset, setPreset] = useState<Layout["preset"]>(
-    s.layout?.preset ?? "shonar",
+    s.layout?.preset ?? DEFAULT_PRESET,
   );
   const [presetPreview, setPresetPreview] = useState(false),
     [starting, setStarting] = useState(false);
   useEffect(() => {
-    setPreset(s.layout?.preset ?? "shonar");
+    setPreset(s.layout?.preset ?? DEFAULT_PRESET);
     setPresetPreview(false);
   }, [s.layout?.preset]);
   const preview = previewDistrict(s, brush),

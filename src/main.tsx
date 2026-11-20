@@ -70,6 +70,7 @@ import {
 } from "./impact";
 import {
   DEFAULT,
+  DEFAULT_PRESET,
   districtFor,
   baselineScenario,
   PRESETS,
@@ -973,8 +974,8 @@ function App() {
               <span className="dot" /> FICTIONAL DISTRICT / 01
             </div>
             <h1>
-              {PRESETS[s.layout?.preset ?? "shonar"].name}
-              <span>সোনার কোয়ার্টার</span>
+              {PRESETS[s.layout?.preset ?? DEFAULT_PRESET].name}
+              <span>বাংলা কোয়ার্টার</span>
             </h1>
             <p>
               A neighborhood. A storm.
@@ -1474,7 +1475,7 @@ function App() {
             <div className="map-heading">
               <div className="eyebrow">
                 THE DESIGN STUDIO <span>/</span>{" "}
-                {PRESETS[s.layout?.preset ?? "shonar"].name.toUpperCase()}
+                {PRESETS[s.layout?.preset ?? DEFAULT_PRESET].name.toUpperCase()}
               </div>
               <h2>
                 {compare
