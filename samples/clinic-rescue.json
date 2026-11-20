@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "model": "monsoon-1.1",
+  "name": "Shonar Quarter",
+  "challenge": "clinic",
+  "storm": "double",
+  "intensity": 45,
+  "duration": 40,
+  "recovery": 120,
+  "blockage": 20,
+  "outlet": 4,
+  "interventions": [
+    { "id": "b1", "type": "basin", "x": 59, "y": 63 },
+    { "id": "d1", "type": "drain", "x": 64, "y": 66 },
+    { "id": "d2", "type": "drain", "x": 66, "y": 66 },
+    { "id": "d3", "type": "drain", "x": 61, "y": 66 }
+  ]
+}

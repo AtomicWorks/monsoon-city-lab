@@ -1,0 +1,262 @@
+.side-tabs {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.side-tabs button {
+  padding: 13px 2px;
+  font-size: 10px;
+}
+.district-editor .mission-heading {
+  font-size: 28px;
+}
+.district-editor p {
+  line-height: 1.6;
+}
+.district-editor button {
+  cursor: pointer;
+}
+.district-lesson,
+.district-locked,
+.preset-preview {
+  padding: 16px;
+  border: 1px solid #566d49;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #34482e, #1d3026);
+  margin: 18px 0;
+}
+.district-lesson strong,
+.district-locked strong {
+  display: block;
+  color: #e4edcf;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.district-lesson p,
+.district-locked p,
+.preset-preview p {
+  font-size: 11px;
+  color: #b9c8af;
+  margin: 10px 0;
+}
+.district-lesson button,
+.district-locked button,
+.preset-preview button,
+.apply-brush {
+  padding: 12px 15px;
+  background: #c6dc94;
+  color: #1d2b22;
+  border: 1px solid #c6dc94;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 12px;
+  font-weight: 600;
+}
+.district-editor .quiet-button {
+  background: transparent;
+  color: #bdcbb1;
+  border: 1px solid #4d6246;
+  margin-top: 9px;
+  padding: 10px;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 11px;
+}
+.district-editor .apply-brush:hover:not(:disabled),
+.district-lesson button:not(.quiet-button):hover:not(:disabled),
+.district-locked button:hover:not(:disabled),
+.preset-preview button:not(.quiet-button):hover:not(:disabled),
+.district-brushes button[aria-pressed="true"]:hover:not(:disabled) {
+  color: #1d2b22;
+}
+.lesson-step {
+  display: block;
+  color: #c6dc94;
+  font-size: 9px;
+  letter-spacing: 1.8px;
+  margin-bottom: 9px;
+}
+.lesson-results {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 14px 0;
+}
+.lesson-results span {
+  font-size: 10px;
+  color: #b8c8a9;
+  padding: 10px;
+  background: #18291f;
+  border-radius: 7px;
+}
+.lesson-results strong {
+  font-size: 21px;
+  margin-top: 5px;
+}
+.lesson-results small {
+  display: block;
+  font-size: 9px;
+  line-height: 1.5;
+  margin-top: 6px;
+}
+.district-brushes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 18px 0;
+}
+.district-brushes button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #465a43;
+  border-radius: 7px;
+  background: #1b3025;
+  color: #bdcbb1;
+  padding: 11px 8px;
+  font-size: 11px;
+  text-align: left;
+  transition:
+    background 0.18s,
+    transform 0.18s;
+}
+.district-brushes button[aria-pressed="true"] {
+  background: #c6dc94;
+  color: #192b1e;
+  transform: translateY(-2px);
+  border-color: #c6dc94;
+}
+.district-brushes i {
+  height: 13px;
+  width: 13px;
+  border-radius: 3px;
+  background: #91b86f;
+  flex: none;
+}
+.district-brushes [data-kind="1"] {
+  background: #a6aa96;
+}
+.district-brushes [data-kind="4"] {
+  background: #d1c8ab;
+}
+.district-brushes [data-kind="5"] {
+  background: #656e69;
+}
+.lot-coordinates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 15px 0;
+}
+.lot-coordinates label {
+  font-size: 11px;
+  color: #bccbb2;
+}
+.lot-coordinates input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #4e6449;
+  border-radius: 6px;
+  background: #18291f;
+  color: #e2edce;
+  padding: 10px;
+  margin-top: 7px;
+}
+.district-minimap {
+  position: relative;
+  margin: 14px 0;
+  border: 1px solid #5b7150;
+  border-radius: 9px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+.district-minimap .plan-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.lot-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+}
+.lot-grid button {
+  min-width: 0;
+  padding: 0;
+  border: 1px solid #ffffff17;
+  background: transparent;
+  color: #e2d4af;
+}
+.lot-grid button:disabled {
+  background: repeating-linear-gradient(
+    45deg,
+    #14241f77,
+    #14241f77 3px,
+    transparent 3px,
+    transparent 6px
+  );
+  opacity: 1;
+  cursor: default;
+}
+.lot-grid button.brush-preview {
+  background: #d6ed9b45;
+  box-shadow: inset 0 0 0 1px #d7ecad;
+}
+.lot-grid button[aria-pressed="true"],
+.lot-grid button:focus-visible {
+  box-shadow: inset 0 0 0 2px #fff;
+  outline: none;
+}
+.brush-feedback {
+  font-size: 11px;
+  color: #c4d4b4;
+  min-height: 36px;
+}
+.district-history {
+  display: flex;
+  gap: 9px;
+  margin-top: 10px;
+}
+.district-history button {
+  flex: 1;
+  padding: 10px 6px;
+  background: #273b2b;
+  color: #c4d4b4;
+  border: 1px solid #4c6244;
+  border-radius: 5px;
+  font-size: 10px;
+}
+.district-editor button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.district-editor .lot-grid button:disabled {
+  opacity: 1;
+}
+@media (max-width: 760px) {
+  .side-tabs button {
+    font-size: 11px;
+    padding: 14px 3px;
+  }
+  .district-editor .mission-heading {
+    font-size: 29px;
+  }
+  .district-minimap {
+    max-width: 380px;
+  }
+  .district-brushes button {
+    padding: 14px 10px;
+  }
+  .district-history button {
+    padding: 13px;
+  }
+}
+[data-motion="reduced"] .district-brushes button {
+  transition: none;
+  transform: none;
+}
