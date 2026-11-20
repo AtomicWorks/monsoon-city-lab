@@ -73,11 +73,12 @@ export function FieldNotes() {
       </ol>
       <h3>What the model represents</h3>
       <p>
-        Release 02 adds a configurable recovery window after rain stops.
-        Landmark cards sample entrance runoff and road access. Green routes are
-        available at the selected time; red routes are dry-weather reference
-        paths with a marker at the first flooded segment. Recovery timing is
-        sampled once per minute and does not imply real-world safe passage.
+        After the rain stops, each run can continue through a recovery window of
+        up to three hours while soil and drains keep working. Landmark cards
+        sample entrance runoff and road access. Green routes are available at
+        the selected time; red routes are dry-weather reference paths with a
+        marker at the first flooded segment. Recovery timing is sampled once per
+        minute and does not imply real-world safe passage.
       </p>
       <p>
         A 100 × 100 grid with 10 m cells. Terrain and water heights are

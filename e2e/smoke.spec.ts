@@ -17,8 +17,11 @@ test("a visitor can load the district, run a storm and open the planning lab", a
       errors.push(`${m.type()}: ${m.text()}`);
   });
   const external: string[] = [];
+  const fontRequests: string[] = [];
   page.on("request", (r) => {
     if (!r.url().startsWith(baseURL!)) external.push(r.url());
+    if (r.url().endsWith(".woff2"))
+      fontRequests.push(new URL(r.url()).pathname);
   });
 
   await page.goto("/");
@@ -42,6 +45,24 @@ test("a visitor can load the district, run a storm and open the planning lab", a
       };
     });
     expect(loaded).toEqual({ dmSans: true, manrope: true });
+
+    // The Latin faces are preloaded so text does not swap fonts after first
+    // paint, and a preload that does not match the CSS request would
+    // download the same file twice.
+    const preloads = await page
+      .locator('link[rel="preload"][as="font"]')
+      .evaluateAll((links) =>
+        links.map((l) => new URL((l as HTMLLinkElement).href).pathname),
+      );
+    expect(preloads.map((p) => p.replace(/-[\w-]{8}\.woff2$/, ""))).toEqual([
+      "/assets/dm-sans-latin-wght-normal",
+      "/assets/manrope-latin-wght-normal",
+    ]);
+    for (const file of preloads)
+      expect(
+        fontRequests.filter((r) => r === file),
+        `${file} should download once`,
+      ).toHaveLength(1);
   });
 
   await test.step("running a storm produces results", async () => {

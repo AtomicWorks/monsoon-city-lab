@@ -6,12 +6,13 @@ No change to the simulation physics or model version (monsoon-1.3).
 
 - **Saved work is no longer lost.** An autosave or sandbox this version cannot read is backed up (newest three kept) before the app falls back to the default district, instead of being overwritten. One unreadable saved plan no longer hides the rest of the Planning lab library. Startup storage warnings stay visible after the first storm run.
 - **Faster first load.** The 3D scene (with three.js) and the Planning lab load on demand, and React and three.js have their own long-lived chunks. The script needed before the panels appear fell from 926 kB to 362 kB (260 kB to 114 kB gzipped).
-- **No third-party requests.** DM Sans and Manrope are self-hosted variable fonts instead of a render-blocking Google Fonts import.
+- **No third-party requests.** DM Sans and Manrope are self-hosted variable fonts instead of a render-blocking Google Fonts import. Their Latin faces are preloaded, so text no longer switches font after the page first appears.
 - **Lighter simulation hand-off.** The worker transfers result grids to the page instead of copying them.
 - **WebGL contexts are released** as soon as the 3D scene is rebuilt after a district edit, rather than when the browser garbage-collects the old canvas.
 - **Safety nets.** Storage tests run against an in-memory IndexedDB, tests and configs are type-checked, a Playwright smoke test exercises the production build, and GitHub Actions runs type checks, unit tests, the build and the smoke test on every pull request.
 - **Dependencies:** three.js 0.187 and Vite 6.4.6. three.js no longer has soft PCF shadows, so the scene asks for the standard PCF shadows it was already falling back to. The smoke test now also fails on console warnings.
 - **Smaller app shell.** The Storm and Build tabs, coordinate form, map legend, timeline, results bar and dialog contents moved out of `main.tsx` (2,388 to about 1,620 lines) into their own components. State stays in `main.tsx`; behaviour is unchanged.
+- The field notes no longer open their model section with an old Release 02 note.
 - An all-rights-reserved license notice.
 
 ## Release 08
