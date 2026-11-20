@@ -133,3 +133,7 @@ Before treating outputs as research results, add analytical hydraulic benchmarks
 ## Hosting
 
 The production assets are in `dist/` after `npm run build`. Deploy that directory to a static host to publish your own build. There are no paid APIs or server-side compute requirements. Google Fonts is optional and falls back to system sans-serif if unavailable.
+
+## License
+
+Copyright © 2026 Asifur Rahman Bhuiyan. All rights reserved. The source is available to view; see [LICENSE](LICENSE).
