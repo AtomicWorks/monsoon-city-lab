@@ -878,12 +878,7 @@ function App() {
   return (
     <div className={`app ${tour !== null ? "tour-active" : ""}`}>
       <header className="header">
-        <a
-          className="brand"
-          href="#"
-          onClick={(e) => e.preventDefault()}
-          aria-label="MONSOON home"
-        >
+        <a className="brand" href="#" onClick={(e) => e.preventDefault()}>
           <span className="brand-icon">
             <Waves size={25} />
           </span>

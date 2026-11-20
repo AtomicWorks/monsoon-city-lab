@@ -14,7 +14,16 @@ Measurements:
 - **WebGL (measured with three.js 0.180):** in Chromium, 70 consecutive district rebuilds caused no lost contexts. Before the fix, 11 replaced contexts were still alive afterwards; with `forceContextLoss()` each is released at once. Each rebuild still costs a main-thread task of about 75 ms, which this release does not change.
 - **Fonts:** DM Sans and Manrope are served from the app's own origin as four variable woff2 files (95 kB in total); the Google Fonts request is gone.
 
-Evidence: `docs/hero.jpg`, captured from the Protect the clinic demo at minute 24. No physical-device, Safari, formal accessibility or sustained frame-rate benchmark was performed.
+Accessibility (automated only):
+
+- **axe-core 4.14 scan** (WCAG 2.1 A and AA rules) of the studio after a run, all five other sidebar tabs, the comparison view, the scenario report, field notes, help centre, graphics panel and Planning lab. Two issues were found and fixed: the header link's accessible name omitted its visible text (WCAG 2.5.3), and the scene container's `aria-label` had no role to attach to. The scan is now part of `npm run test:e2e` and CI.
+- **Contrast on gradients:** axe could not decide 56 desktop and 47 mobile (390 × 844) text elements because they sit on gradient backgrounds. Measuring the rendered background behind each, with text hidden, put every one above its WCAG AA threshold; the lowest was 4.73:1 for the small Bangla district subtitle.
+- **Keyboard focus:** tabbing through the studio reached 41 distinct controls, and each showed a visible focus ring.
+- **Not covered:** no screen reader, voice control or keyboard-only task completion was tested. Much secondary text is small: labels and captions are often 7–8 px, and a few are 5–6 px. WCAG sets no minimum size, but this text is hard to read without zooming.
+
+Running the browser tests in parallel starved the simulation of CPU (software WebGL renders the scene continuously, even when idle), so Playwright now runs them one at a time.
+
+Evidence: `docs/hero.jpg`, captured from the Protect the clinic demo at minute 24. No physical-device, Safari, screen-reader or sustained frame-rate benchmark was performed.
 
 ## Release 08 verification — 10 November 2026
 

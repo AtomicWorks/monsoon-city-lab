@@ -46,16 +46,16 @@ npm install
 npm run dev
 ```
 
-| Command             | What it does                                                                                     |
-| ------------------- | ------------------------------------------------------------------------------------------------ |
-| `npm run dev`       | Development server at http://127.0.0.1:5173                                                      |
-| `npm test`          | Unit tests: water conservation, determinism, missions, storage, sharing and more                 |
-| `npm run test:e2e`  | Playwright smoke test of the production build (run `npx playwright install chromium` once first) |
-| `npm run typecheck` | Type-checks the app, tests and configs                                                           |
-| `npm run build`     | Production build in `dist/`                                                                      |
-| `npm run preview`   | Serves the production build                                                                      |
+| Command             | What it does                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`       | Development server at http://127.0.0.1:5173                                                                         |
+| `npm test`          | Unit tests: water conservation, determinism, missions, storage, sharing and more                                    |
+| `npm run test:e2e`  | Playwright smoke and accessibility tests of the production build (run `npx playwright install chromium` once first) |
+| `npm run typecheck` | Type-checks the app, tests and configs                                                                              |
+| `npm run build`     | Production build in `dist/`                                                                                         |
+| `npm run preview`   | Serves the production build                                                                                         |
 
-GitHub Actions runs the type checks, unit tests, build and smoke test on every pull request. [QA.md](QA.md) records the browser verification done for each release.
+GitHub Actions runs the type checks, unit tests, build, smoke test and accessibility scan on every pull request. [QA.md](QA.md) records the browser verification done for each release.
 
 ## Project structure
 

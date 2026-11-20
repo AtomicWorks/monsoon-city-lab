@@ -1123,6 +1123,7 @@ export default function City(props: Props) {
     <div
       className="city"
       ref={host}
+      role="group"
       aria-label="Interactive three dimensional neighborhood. Drag to orbit, scroll to zoom, select a location to inspect."
     >
       {error && (

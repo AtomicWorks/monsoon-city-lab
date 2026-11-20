@@ -5,6 +5,10 @@ const port = 4174;
 export default defineConfig({
   testDir: "e2e",
   timeout: 90_000,
+  // One browser at a time. Each test renders the 3D scene with software
+  // WebGL, which uses most of the CPU; two at once starve the simulation
+  // workers and a five-second storm run takes over a minute.
+  workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
   use: {

@@ -13,6 +13,7 @@ No change to the simulation physics or model version (monsoon-1.3).
 - **Dependencies:** three.js 0.187 and Vite 6.4.6. three.js no longer has soft PCF shadows, so the scene asks for the standard PCF shadows it was already falling back to. The smoke test now also fails on console warnings.
 - **Smaller app shell.** The Storm and Build tabs, coordinate form, map legend, timeline, results bar and dialog contents moved out of `main.tsx` (2,388 to about 1,620 lines) into their own components. State stays in `main.tsx`; behaviour is unchanged.
 - The field notes no longer open their model section with an old Release 02 note.
+- **Accessibility.** An automated WCAG 2.1 A/AA scan (axe-core) now covers the studio, every sidebar tab, the comparison view, both dialogs, the help centre, graphics settings and the Planning lab. It found two problems, both fixed: the header link's spoken name did not include its visible text, and the 3D scene's description was ignored because its container had no role.
 - An all-rights-reserved license notice.
 
 ## Release 08
