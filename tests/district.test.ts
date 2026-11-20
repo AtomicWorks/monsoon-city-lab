@@ -29,7 +29,7 @@ test("legacy scenarios keep the original district and custom maps cannot earn mi
   assert.equal(districtFor(old.layout), DISTRICT);
   const s = {
     ...missionScenario("services"),
-    layout: { preset: DEFAULT_PRESET, edits: [] },
+    layout: { preset: DEFAULT_PRESET, edits: [] } satisfies Layout,
   };
   assert.throws(() => validate(s), /Missions/);
   assert.equal(matchesMission(s), false);

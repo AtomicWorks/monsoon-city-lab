@@ -25,6 +25,7 @@ export class UnreadableScenarioError extends Error {
     );
   }
 }
+const BACKUPS_KEPT = 3;
 function open(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const r = indexedDB.open("monsoon", 2);
@@ -68,8 +69,18 @@ export async function restore(key = "current"): Promise<Scenario | null> {
       } catch (e) {
         // Copy the record aside in the same transaction, so the error is only
         // reported once the backup exists.
-        const backupKey = `unreadable-${key}-${Date.now()}`;
+        const prefix = `unreadable-${key}-`,
+          backupKey = prefix + Date.now();
         store.put(r.result, backupKey);
+        // Keep the newest few. Millisecond timestamps share a width, so key
+        // order is chronological.
+        const keys = store.getAllKeys(
+          IDBKeyRange.bound(prefix, prefix + "￿"),
+        );
+        keys.onsuccess = () => {
+          for (const old of keys.result.slice(0, -BACKUPS_KEPT))
+            store.delete(old);
+        };
         failure = new UnreadableScenarioError(
           backupKey,
           e instanceof Error ? e.message : String(e),

@@ -672,3 +672,23 @@ export function paintLayout(
     throw Error("This block protects a landmark or the existing pond.");
   return validate({ ...s, layout: { ...layout, edits: [...edits.values()] } });
 }
+// Typed-array buffers of simulation results, each listed once, for a
+// postMessage transfer list (a repeated buffer makes postMessage throw).
+export function resultBuffers(...results: Result[]): ArrayBuffer[] {
+  const buffers = new Set<ArrayBuffer>();
+  const add = (view?: ArrayBufferView) => {
+    if (view) buffers.add(view.buffer as ArrayBuffer);
+  };
+  for (const r of results) {
+    for (const f of r.frames) {
+      add(f.depth);
+      add(f.draining);
+      add(f.soilUsed);
+    }
+    add(r.peakDepth);
+    add(r.exposure);
+    add(r.infiltration);
+    add(r.drainage);
+  }
+  return [...buffers];
+}

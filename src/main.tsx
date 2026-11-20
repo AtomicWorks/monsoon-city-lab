@@ -530,10 +530,15 @@ function App() {
       type: "module",
     });
     worker.current = w;
+    // A failed run must not leave a held storage warning queued for a later one.
+    const fail = (message: string) => {
+      inform([pendingNotice.current, message].filter(Boolean).join(" "));
+      pendingNotice.current = "";
+    };
     w.onmessage = (e) => {
       if (e.data.type === "progress") setProgress(e.data.value);
       if (e.data.type === "error") {
-        inform(e.data.message);
+        fail(e.data.message);
         setProgress(null);
         w.terminate();
       }
@@ -552,7 +557,7 @@ function App() {
     };
     w.onerror = () => {
       setProgress(null);
-      inform("The simulation could not finish. Try running it again.");
+      fail("The simulation could not finish. Try running it again.");
       w.terminate();
     };
     w.postMessage(value);

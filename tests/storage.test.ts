@@ -92,3 +92,18 @@ test("one unreadable saved plan does not hide the rest of the library", async ()
   );
   assert.equal(unreadable, 2);
 });
+
+test("repeated unreadable loads keep only the newest three backups", async () => {
+  const backups: string[] = [];
+  for (let n = 0; n < 5; n++) {
+    await putRaw("scenarios", { ...DEFAULT, model: "monsoon-9.9", name: `v${n}` }, "current");
+    await restore().catch((e: UnreadableScenarioError) => backups.push(e.backupKey));
+    await new Promise((r) => setTimeout(r, 5)); // distinct timestamps
+  }
+  const kept = [];
+  for (const key of backups) kept.push((await getRaw(key)) as Scenario | undefined);
+  assert.deepEqual(
+    kept.map((s) => s?.name),
+    [undefined, undefined, "v2", "v3", "v4"],
+  );
+});

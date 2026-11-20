@@ -1,4 +1,9 @@
-import { simulate, baselineScenario, type Scenario } from "./engine";
+import {
+  baselineScenario,
+  resultBuffers,
+  simulate,
+  type Scenario,
+} from "./engine";
 self.onmessage = (e: MessageEvent<Scenario>) => {
   try {
     const baseline = simulate(baselineScenario(e.data), (p) =>
@@ -10,7 +15,11 @@ self.onmessage = (e: MessageEvent<Scenario>) => {
             self.postMessage({ type: "progress", value: 0.5 + p * 0.5 }),
           )
         : baseline;
-    self.postMessage({ type: "done", baseline, improved });
+    // Transfer rather than copy: a long run holds tens of megabytes of grids.
+    self.postMessage(
+      { type: "done", baseline, improved },
+      { transfer: resultBuffers(baseline, improved) },
+    );
   } catch (e) {
     self.postMessage({
       type: "error",

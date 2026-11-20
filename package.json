@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.tests.json",
     "build": "tsc --noEmit && vite build",
     "test": "tsx --test tests/*.test.ts",
     "preview": "vite preview --host 127.0.0.1"
@@ -16,6 +17,7 @@
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "@types/node": "^22.20.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/three": "^0.180.0",
