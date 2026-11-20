@@ -64,7 +64,8 @@ GitHub Actions runs the type checks, unit tests, build and smoke test on every p
 | `src/engine.ts`                          | Hydrology model, scenario validation and district layouts    |
 | `src/worker.ts`                          | Runs the baseline and design simulations off the main thread |
 | `src/City.tsx`                           | three.js scene that renders recorded water depths            |
-| `src/main.tsx`                           | App shell: editing, results, playback                        |
+| `src/main.tsx`                           | App shell: state, editing, simulation runs and playback      |
+| `src/*Panel.tsx`, `src/Timeline.tsx`     | Studio panels, timeline and results; state comes from `main` |
 | `src/planning.ts`, `src/PlanningLab.tsx` | Saved plans, comparison, search and stress tests             |
 | `src/storage.ts`                         | IndexedDB autosave and plan library                          |
 | `tests/`, `e2e/`                         | Unit tests and the browser smoke test                        |

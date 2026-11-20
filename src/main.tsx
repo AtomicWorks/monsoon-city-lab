@@ -12,25 +12,15 @@ import {
   ArrowUpFromLine,
   ArrowUpRight,
   Check,
-  ChevronRight,
   CloudRain,
-  Droplets,
   Expand,
   Layers,
-  Leaf,
   MapPin,
-  Pause,
   Play,
-  Plus,
-  RotateCcw,
   Settings2,
-  ShieldCheck,
-  SlidersHorizontal,
-  Trash2,
   Waves,
   X,
   BookOpen,
-  MoveUpRight,
   LocateFixed,
   Volume2,
   VolumeX,
@@ -41,7 +31,6 @@ import ServicePanel from "./ServicePanel";
 import { type AccessLayer } from "./mobility";
 import {
   placeIntervention,
-  placementError,
   recordEdit,
   travelHistory,
   type EditOperation,
@@ -74,7 +63,7 @@ import ExperiencePanel, {
 import { stormEvents, replayChapters, type StormEvent } from "./experience";
 import { scenarioFromHash } from "./share";
 import { summarize } from "./planning";
-import { ContextHelp, GuidedTour, HelpCenter, WelcomeGuide } from "./Help";
+import { GuidedTour, HelpCenter, WelcomeGuide } from "./Help";
 import { TOUR, type GuideAction } from "./guides";
 import {
   LANDMARKS,
@@ -94,7 +83,6 @@ import {
   N,
   TOOLS,
   access,
-  cost,
   rainfall,
   validate,
   type Intervention,
@@ -103,81 +91,17 @@ import {
   type Tool,
 } from "./engine";
 import { UnreadableScenarioError, restore, save, writePlan } from "./storage";
+import StormPanel from "./StormPanel";
+import BuildPanel from "./BuildPanel";
+import LocatorForm from "./LocatorForm";
+import MapLegend from "./MapLegend";
+import Timeline from "./Timeline";
+import ResultsBar from "./ResultsBar";
+import { FieldNotes, ScenarioReport } from "./StudioDialog";
+import { download } from "./format";
 import "./fonts/fonts.css";
 import "./style.css";
 import "./district.css";
-const fmt = (v: number, d = 0) =>
-  v.toLocaleString("en", { maximumFractionDigits: d });
-function download(name: string, body: string, type = "application/json") {
-  const url = URL.createObjectURL(new Blob([body], { type }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-function RainChart({ s }: { s: Scenario }) {
-  return (
-    <svg
-      className="rain-chart"
-      viewBox="0 0 240 58"
-      role="img"
-      aria-label={`${s.storm} rainfall profile, peak setting ${s.intensity} millimeters per hour`}
-    >
-      <path d="M0 54H240M0 28H240" stroke="#34423b" strokeDasharray="2 4" />
-      {Array.from({ length: 40 }, (_, i) => {
-        const h = (rainfall(s, (i / 40) * s.duration * 60) / 160) * 48;
-        return (
-          <rect
-            key={i}
-            x={i * 6}
-            y={54 - h}
-            width="3.4"
-            height={h}
-            rx="1"
-            fill="#bdd68b"
-          />
-        );
-      })}
-    </svg>
-  );
-}
-function History({ a, b }: { a: Result; b: Result }) {
-  const max = Math.max(
-    1,
-    ...a.frames.map((f) => f.metrics.stored),
-    ...b.frames.map((f) => f.metrics.stored),
-  );
-  const path = (r: Result) =>
-    r.frames
-      .map(
-        (f, i) =>
-          `${i ? "L" : "M"}${(i / (r.frames.length - 1)) * 600} ${110 - (f.metrics.stored / max) * 100}`,
-      )
-      .join(" ");
-  return (
-    <svg
-      className="history"
-      viewBox="0 0 600 130"
-      role="img"
-      aria-label="Stored surface water over time; gray baseline and green improved design"
-    >
-      <path
-        d="M0 110H600M0 60H600M0 10H600"
-        stroke="#35443b"
-        strokeDasharray="3 6"
-      />
-      <path d={path(a)} fill="none" stroke="#aeb8af" strokeWidth="2" />
-      <path d={path(b)} fill="none" stroke="#c7e398" strokeWidth="3" />
-      <text x="0" y="128" fill="#aeb8af" fontSize="10">
-        0 min
-      </text>
-      <text x="550" y="128" fill="#aeb8af" fontSize="10">
-        {a.scenario.duration + (a.scenario.recovery ?? 0)} min
-      </text>
-    </svg>
-  );
-}
 function App() {
   const [brush, setBrush] = useState<Brush>({ x: 5, y: 4, kind: 0, radius: 0 });
   const [construction, setConstruction] = useState<number[]>([]);
@@ -829,6 +753,12 @@ function App() {
     setOperation(null);
     setTool(null);
   }
+  function seek(minute: number) {
+    setPlaying(false);
+    setCine(null);
+    setShot(null);
+    setIndex(minute);
+  }
   function togglePlayback() {
     setCine(null);
     setShot(null);
@@ -919,6 +849,31 @@ function App() {
     };
     download("monsoon-report.json", JSON.stringify(r, null, 2));
     inform("Report exported with model assumptions and measured results.");
+  };
+  // Props shared by the single view and both comparison views.
+  const sceneProps = {
+    districtBrush: tab === "district" && !s.challenge ? brush : null,
+    comparison: compare,
+    layer,
+    traffic,
+    minute: index,
+    moveId: operation?.kind === "move" ? operation.id : undefined,
+    placementItems: s.interventions,
+    preview: locator && tool ? xy : null,
+    quality: tier,
+    weather,
+    activity,
+    animateActivity: playing || (!!cine && !cine.paused),
+    shot,
+    select,
+    selected,
+    rain: playing || (cine && !cine.paused) ? rainfall(s, index * 60) : 0,
+    reduced,
+    top,
+    bus: bus.current,
+    placing: !!tool || tab === "district",
+    tool,
+    focus,
   };
   return (
     <div className={`app ${tour !== null ? "tour-active" : ""}`}>
@@ -1155,316 +1110,33 @@ function App() {
                 busy={!ready || progress !== null}
               />
             ) : tab === "storm" ? (
-              <>
-                <div className="section-label">
-                  01 / WEATHER SCENARIO
-                  <SlidersHorizontal size={14} />
-                </div>
-                <ContextHelp id="storm" />
-                <div className="storm-options">
-                  {(
-                    [
-                      ["burst", "Cloudburst", "Short. Intense. Fast."],
-                      [
-                        "persistent",
-                        "Long monsoon",
-                        "A sustained rainfall event.",
-                      ],
-                      [
-                        "double",
-                        "Double peak",
-                        "Two waves. One recovery window.",
-                      ],
-                    ] as const
-                  ).map(([id, name, desc]) => (
-                    <button
-                      key={id}
-                      className={`storm-option ${s.storm === id ? "chosen" : ""}`}
-                      onClick={() => change({ storm: id })}
-                    >
-                      <CloudRain size={21} />
-                      <span>
-                        <strong>{name}</strong>
-                        <small>{desc}</small>
-                      </span>
-                      <span className="radio">
-                        {s.storm === id && <span />}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                <RainChart s={s} />
-                <div className="chart-caption">
-                  <span>RAINFALL PROFILE</span>
-                  <span>{s.duration} MIN</span>
-                </div>
-                <label className="range-label">
-                  Peak intensity{" "}
-                  <strong>
-                    {s.intensity}
-                    <small> mm/h</small>
-                  </strong>
-                  <input
-                    aria-label="Peak intensity"
-                    type="range"
-                    min="0"
-                    max="160"
-                    step="5"
-                    value={s.intensity}
-                    onChange={(e) => change({ intensity: +e.target.value })}
-                  />
-                </label>
-                <label className="range-label">
-                  Storm duration{" "}
-                  <strong>
-                    {s.duration}
-                    <small> min</small>
-                  </strong>
-                  <input
-                    aria-label="Storm duration"
-                    type="range"
-                    min="20"
-                    max="120"
-                    step="10"
-                    value={s.duration}
-                    onChange={(e) => change({ duration: +e.target.value })}
-                  />
-                </label>
-                <div className="section-label drainage-label">
-                  RECOVERY WINDOW
-                </div>
-                <ContextHelp id="recovery" />
-                <label className="range-label">
-                  After rainfall stops{" "}
-                  <strong>
-                    {s.recovery ?? 0}
-                    <small> min</small>
-                  </strong>
-                  <input
-                    aria-label="Recovery duration"
-                    type="range"
-                    min="0"
-                    max="180"
-                    step="15"
-                    value={s.recovery ?? 0}
-                    onChange={(e) => change({ recovery: +e.target.value })}
-                  />
-                </label>
-                <p className="side-intro">
-                  Rain stops completely. Soil and drains continue working
-                  through the recovery window.
-                </p>
-                <div className="section-label drainage-label">
-                  02 / DRAINAGE CONDITIONS
-                </div>
-                <ContextHelp id="drainage" />
-                <label className="range-label">
-                  Drain blockage{" "}
-                  <strong>
-                    {s.blockage}
-                    <small> %</small>
-                  </strong>
-                  <input
-                    aria-label="Drain blockage"
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={s.blockage}
-                    onChange={(e) => change({ blockage: +e.target.value })}
-                  />
-                </label>
-                <label className="range-label">
-                  Shared outlet capacity{" "}
-                  <strong>
-                    {s.outlet}
-                    <small> m³/s</small>
-                  </strong>
-                  <input
-                    aria-label="Outlet capacity"
-                    type="range"
-                    min="0"
-                    max="12"
-                    step=".5"
-                    value={s.outlet}
-                    onChange={(e) => change({ outlet: +e.target.value })}
-                  />
-                </label>
-                <label className="range-label">
-                  Soil absorption
-                  <strong>
-                    {s.infiltrationFactor ?? 1}
-                    <small> ×</small>
-                  </strong>
-                  <input
-                    aria-label="Soil absorption multiplier"
-                    type="range"
-                    min="0"
-                    max="2"
-                    step="0.1"
-                    value={s.infiltrationFactor ?? 1}
-                    onChange={(e) =>
-                      change({ infiltrationFactor: +e.target.value })
-                    }
-                  />
-                </label>
-                <ContextHelp id="soil" />
-                <div className="hint">
-                  <Droplets size={16} />
-                  <p>
-                    Every drop is accounted for. Soil, storage and drainage all
-                    have limits.
-                  </p>
-                </div>
-              </>
+              <StormPanel s={s} change={change} />
             ) : (
-              <>
-                <div className="section-label">
-                  01 / YOUR INVESTMENT
-                  <span>{100 - cost(s.interventions)} C LEFT</span>
-                </div>
-                <div className="budget-bar">
-                  <i style={{ width: `${cost(s.interventions)}%` }} />
-                </div>
-                <ContextHelp id="placement" />
-                <p className="side-intro">
-                  Choose an intervention, then place it on open ground or a
-                  street.
-                </p>
-                {operation && (
-                  <div className="edit-notice" role="status">
-                    <strong>
-                      {operation.kind === "move"
-                        ? "Move improvement"
-                        : "Duplicate improvement"}
-                    </strong>
-                    <p>
-                      {operation.kind === "move"
-                        ? "No extra credits. Original stays until a valid destination is chosen."
-                        : "Choose a new location. Cost and budget are checked before placement."}
-                    </p>
-                    <button
-                      onClick={() => {
-                        setOperation(null);
-                        setTool(null);
-                        setLocator(false);
-                      }}
-                    >
-                      Cancel edit
-                    </button>
-                  </div>
-                )}
-                <div className="tool-list">
-                  {(
-                    Object.entries(TOOLS) as [Tool, (typeof TOOLS)[Tool]][]
-                  ).map(([id, t]) => (
-                    <button
-                      key={id}
-                      className={`tool-card ${tool === id ? "chosen" : ""}`}
-                      onClick={() => {
-                        setOperation(null);
-                        setLocator(false);
-                        setTool((v) => (v === id ? null : id));
-                      }}
-                    >
-                      <span className="tool-symbol" style={{ color: t.color }}>
-                        {id === "garden" ? (
-                          <Leaf />
-                        ) : id === "basin" ? (
-                          <Waves />
-                        ) : id === "drain" ? (
-                          <Droplets />
-                        ) : (
-                          <Layers />
-                        )}
-                      </span>
-                      <strong>
-                        {t.name}
-                        <small>
-                          {t.cost} credits · {t.radius * 10} m radius
-                        </small>
-                      </strong>
-                      <Plus size={15} />
-                      <p>{t.description}</p>
-                    </button>
-                  ))}
-                </div>
-                <div className="section-label">
-                  02 / PLACED IMPROVEMENTS
-                  <button
-                    aria-label="Undo last intervention change"
-                    disabled={!editHistory.current.past.length}
-                    className="icon-button"
-                    onClick={() => undoEdit("undo")}
-                  >
-                    <RotateCcw size={14} />
-                  </button>
-                  <button
-                    disabled={!editHistory.current.future.length}
-                    onClick={() => undoEdit("redo")}
-                    aria-label="Redo intervention change"
-                    className="redo-edit"
-                  >
-                    Redo
-                  </button>
-                </div>
-                {s.interventions.length === 0 ? (
-                  <p className="empty">
-                    Your plan starts here. Add an improvement to see what
-                    changes.
-                  </p>
-                ) : (
-                  s.interventions.map((t, i) => (
-                    <div className="placed" key={t.id}>
-                      <span className="placement-number">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <button
-                        onClick={() => {
-                          setSelected(t.y * N + t.x);
-                          setXY({ x: t.x, y: t.y });
-                        }}
-                      >
-                        {TOOLS[t.type].name}
-                        <small>
-                          Cell {t.x}, {t.y}
-                        </small>
-                      </button>
-                      <button
-                        className="edit-placement"
-                        aria-label={`Move ${TOOLS[t.type].name} at ${t.x}, ${t.y}`}
-                        onClick={() => beginEdit("move", t)}
-                      >
-                        Move
-                      </button>
-                      <button
-                        className="edit-placement"
-                        disabled={
-                          s.interventions.length >= 8 ||
-                          cost(s.interventions) + TOOLS[t.type].cost > 100
-                        }
-                        aria-label={`Duplicate ${TOOLS[t.type].name} at ${t.x}, ${t.y}`}
-                        onClick={() => beginEdit("duplicate", t)}
-                      >
-                        Copy
-                      </button>
-                      <button
-                        aria-label={`Remove ${TOOLS[t.type].name} at ${t.x}, ${t.y}`}
-                        className="icon-button"
-                        onClick={() => remove(t.id)}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))
-                )}
-                <button
-                  className="coordinate-button"
-                  onClick={() => setLocator(true)}
-                >
-                  <LocateFixed size={15} /> Place by coordinates
-                </button>
-              </>
+              <BuildPanel
+                s={s}
+                tool={tool}
+                operation={operation}
+                canUndo={!!editHistory.current.past.length}
+                canRedo={!!editHistory.current.future.length}
+                cancelEdit={() => {
+                  setOperation(null);
+                  setTool(null);
+                  setLocator(false);
+                }}
+                chooseTool={(id) => {
+                  setOperation(null);
+                  setLocator(false);
+                  setTool((v) => (v === id ? null : id));
+                }}
+                undoEdit={undoEdit}
+                showPlacement={(t) => {
+                  setSelected(t.y * N + t.x);
+                  setXY({ x: t.x, y: t.y });
+                }}
+                beginEdit={beginEdit}
+                remove={remove}
+                openLocator={() => setLocator(true)}
+              />
             )}
           </div>
           <div className="run-area" data-guide="run">
@@ -1546,40 +1218,11 @@ function App() {
                   <City
                     layout={compare ? baseScenario.layout : s.layout}
                     construction={compare ? [] : construction}
-                    districtBrush={
-                      tab === "district" && !s.challenge ? brush : null
-                    }
-                    comparison={compare}
-                    layer={layer}
-                    traffic={traffic}
-                    minute={index}
-                    moveId={
-                      operation?.kind === "move" ? operation.id : undefined
-                    }
-                    placementItems={s.interventions}
-                    preview={locator && tool ? xy : null}
-                    quality={tier}
-                    weather={weather}
-                    activity={activity}
+                    {...sceneProps}
                     draining={compare ? baseFrame?.draining : frame?.draining}
-                    animateActivity={playing || (!!cine && !cine.paused)}
-                    shot={shot}
                     depth={compare ? baseFrame?.depth : frame?.depth}
                     difference={!compare ? delta : undefined}
                     items={compare ? [] : s.interventions}
-                    select={select}
-                    selected={selected}
-                    rain={
-                      playing || (cine && !cine.paused)
-                        ? rainfall(s, index * 60)
-                        : 0
-                    }
-                    reduced={reduced}
-                    top={top}
-                    bus={bus.current}
-                    placing={!!tool || tab === "district"}
-                    tool={tool}
-                    focus={focus}
                     route={compare ? routes.a : routes.b}
                     connected={
                       compare ? !!routes.baseConnected : routes.connected
@@ -1601,39 +1244,10 @@ function App() {
                     <City
                       layout={s.layout}
                       construction={construction}
-                      districtBrush={
-                        tab === "district" && !s.challenge ? brush : null
-                      }
-                      comparison={compare}
-                      layer={layer}
-                      traffic={traffic}
-                      minute={index}
-                      moveId={
-                        operation?.kind === "move" ? operation.id : undefined
-                      }
-                      placementItems={s.interventions}
-                      preview={locator && tool ? xy : null}
-                      quality={tier}
-                      weather={weather}
-                      activity={activity}
+                      {...sceneProps}
                       draining={frame?.draining}
-                      animateActivity={playing || (!!cine && !cine.paused)}
-                      shot={shot}
                       depth={frame?.depth}
                       items={s.interventions}
-                      select={select}
-                      selected={selected}
-                      rain={
-                        playing || (cine && !cine.paused)
-                          ? rainfall(s, index * 60)
-                          : 0
-                      }
-                      reduced={reduced}
-                      top={top}
-                      bus={bus.current}
-                      placing={!!tool || tab === "district"}
-                      tool={tool}
-                      focus={focus}
                       route={routes.b}
                       connected={routes.connected}
                     />
@@ -1813,88 +1427,18 @@ function App() {
               </button>
             </div>
             {locator && (
-              <form
-                className="locator"
-                onSubmit={(e) => {
-                  e.preventDefault();
+              <LocatorForm
+                s={s}
+                tool={tool}
+                operation={operation}
+                xy={xy}
+                setXY={setXY}
+                designMap={designMap}
+                submit={() => {
                   select(xy.x, xy.y);
                   setLocator(false);
                 }}
-              >
-                <strong>
-                  {operation?.kind === "move"
-                    ? "Move improvement"
-                    : operation?.kind === "duplicate"
-                      ? "Duplicate improvement"
-                      : tool
-                        ? "Place improvement"
-                        : "Inspect a location"}
-                </strong>
-                <label>
-                  Column
-                  <input
-                    type="number"
-                    min="0"
-                    max="99"
-                    required
-                    value={xy.x}
-                    onChange={(e) =>
-                      setXY((v) => ({ ...v, x: +e.target.value }))
-                    }
-                  />
-                </label>
-                <label>
-                  Row
-                  <input
-                    type="number"
-                    min="0"
-                    max="99"
-                    required
-                    value={xy.y}
-                    onChange={(e) =>
-                      setXY((v) => ({ ...v, y: +e.target.value }))
-                    }
-                  />
-                </label>
-                {tool && (
-                  <p className="placement-feedback">
-                    {placementError(
-                      s.interventions,
-                      tool,
-                      xy.x,
-                      xy.y,
-                      operation?.kind === "move" ? operation.id : undefined,
-                      designMap,
-                    ) ??
-                      (operation?.kind === "move"
-                        ? "Valid destination · no extra cost"
-                        : `Valid destination · ${TOOLS[tool].cost} credits`)}
-                  </p>
-                )}
-                <button
-                  type="submit"
-                  disabled={
-                    !!tool &&
-                    !!placementError(
-                      s.interventions,
-                      tool,
-                      xy.x,
-                      xy.y,
-                      operation?.kind === "move" ? operation.id : undefined,
-                      designMap,
-                    )
-                  }
-                >
-                  {operation?.kind === "move"
-                    ? "Move here"
-                    : operation?.kind === "duplicate"
-                      ? "Duplicate here"
-                      : tool
-                        ? "Place here"
-                        : "Inspect"}{" "}
-                  <ChevronRight size={14} />
-                </button>
-              </form>
+              />
             )}
             {selected !== null && !locator && (
               <FloodInspector
@@ -1905,189 +1449,32 @@ function App() {
                 close={() => setSelected(null)}
               />
             )}
-            <div className="map-bottom">
-              {layer !== "water" && (
-                <div className="mobility-legend">
-                  <b>{layer === "roads" ? "ROAD ACCESS" : "SERVICE ACCESS"}</b>
-                  <span>
-                    {layer === "roads"
-                      ? "Green: connected · Amber: dry, disconnected · Coral: flooded"
-                      : "Green: open route · Coral: interrupted reference route"}
-                  </span>
-                  <small>
-                    {layer === "services"
-                      ? "Click the clinic, school or market to trace its route."
-                      : "Access to northern boundary · 15 cm closure threshold"}
-                  </small>
-                </div>
-              )}
-              <div className="depth-legend">
-                <span>
-                  {difference ? "CHANGE IN WATER DEPTH" : "SURFACE WATER DEPTH"}
-                </span>
-                <div
-                  className={difference ? "gradient difference" : "gradient"}
-                />
-                <div>
-                  {difference ? (
-                    <>
-                      <span>Less water</span>
-                      <span>More water</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>0 cm</span>
-                      <span>10</span>
-                      <span>20+</span>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="map-scale">
-                <span>1 km × 1 km district</span>
-                <small>Drag to orbit · Scroll to zoom</small>
-              </div>
-            </div>
+            <MapLegend layer={layer} difference={difference} />
             {progress !== null && (
               <div className="progress-line">
                 <i style={{ width: `${progress * 100}%` }} />
               </div>
             )}
           </section>
-          <section className="timeline" aria-label="Simulation timeline">
-            <button
-              className="play"
-              disabled={!valid}
-              aria-label={playing ? "Pause playback" : "Play simulation"}
-              onClick={togglePlayback}
-            >
-              {playing ? (
-                <Pause size={18} fill="currentColor" />
-              ) : (
-                <Play size={18} fill="currentColor" />
-              )}
-            </button>
-            <div className="time-readout">
-              {String(valid ? index : 0).padStart(2, "0")}
-              <small> / {s.duration + (s.recovery ?? 0)} MIN</small>
-            </div>
-            <div className="timeline-track">
-              <input
-                aria-label="Simulation time in minutes"
-                type="range"
-                min="0"
-                max={Math.max(1, total - 1)}
-                value={valid ? index : 0}
-                disabled={!valid}
-                onChange={(e) => {
-                  setPlaying(false);
-                  setCine(null);
-                  setShot(null);
-                  setIndex(+e.target.value);
-                }}
-              />
-              <div>
-                <button
-                  className="phase-jump"
-                  disabled={!valid}
-                  onClick={() => {
-                    setPlaying(false);
-                    setCine(null);
-                    setShot(null);
-                    setIndex(0);
-                  }}
-                >
-                  RAINFALL
-                </button>
-                <button
-                  className="phase-jump"
-                  disabled={!valid}
-                  onClick={() => {
-                    setPlaying(false);
-                    setCine(null);
-                    setShot(null);
-                    setIndex(s.duration);
-                  }}
-                >
-                  RAIN ENDS · {s.duration} MIN
-                </button>
-                <span>
-                  {valid && index >= s.duration ? "RECOVERING" : "RECOVERY"} +
-                  {s.recovery ?? 0} MIN
-                </span>
-              </div>
-            </div>
-            <button
-              className="speed"
-              onClick={() => setSpeed((v) => (v === 1 ? 2 : v === 2 ? 4 : 1))}
-              aria-label={`Playback speed ${speed} times`}
-            >
-              {speed}×
-            </button>
-            <span className="timeline-divider" />
-            <button
-              className="report-button"
-              disabled={!valid}
-              onClick={() => setModal("report")}
-            >
-              View report <ArrowUpRight size={16} />
-            </button>
-          </section>
-          <section
-            className="metrics"
+          <Timeline
+            s={s}
+            valid={!!valid}
+            index={index}
+            total={total}
+            playing={playing}
+            speed={speed}
+            togglePlayback={togglePlayback}
+            seek={seek}
+            cycleSpeed={() => setSpeed((v) => (v === 1 ? 2 : v === 2 ? 4 : 1))}
+            openReport={() => setModal("report")}
+          />
+          <ResultsBar
             key={results?.improved.elapsed ?? "empty"}
-            aria-label="Scenario results"
-          >
-            <div>
-              <span className="metric-label">
-                FLOODED AREA <Waves size={15} />
-              </span>
-              <strong>
-                {m ? fmt(m.flooded / 10000, 2) : "—"}
-                <small> ha</small>
-              </strong>
-              <p>
-                {m && s.interventions.length ? (
-                  <span className={reduction >= 0 ? "positive" : "negative"}>
-                    {reduction >= 0 ? "↘" : "↗"} {fmt(Math.abs(reduction), 1)}%{" "}
-                    {reduction >= 0 ? "less" : "more"} than baseline
-                  </span>
-                ) : (
-                  "Surface depth above 10 cm"
-                )}
-              </p>
-            </div>
-            <div>
-              <span className="metric-label">
-                MAXIMUM DEPTH <Droplets size={15} />
-              </span>
-              <strong>
-                {m ? fmt(m.maxDepth * 100, 1) : "—"}
-                <small> cm</small>
-              </strong>
-              <p>At the selected moment</p>
-            </div>
-            <div>
-              <span className="metric-label">
-                CONNECTED STREETS <MoveUpRight size={15} />
-              </span>
-              <strong>
-                {connectivity ?? "—"}
-                <small> %</small>
-              </strong>
-              <p>Reachable from northern boundary</p>
-            </div>
-            <div>
-              <span className="metric-label">
-                SURFACE STORAGE <ShieldCheck size={15} />
-              </span>
-              <strong>
-                {m ? fmt(m.stored) : "—"}
-                <small> m³</small>
-              </strong>
-              <p>Water currently held in the district</p>
-            </div>
-          </section>
+            m={m}
+            reduction={reduction}
+            connectivity={connectivity}
+            hasInterventions={s.interventions.length > 0}
+          />
           <footer className="footer">
             <span>
               <span className="dot" /> EXPERIMENT. OBSERVE. ADAPT.
@@ -2219,166 +1606,14 @@ function App() {
           </button>
         </div>
         {modal === "notes" ? (
-          <>
-            <h2>
-              A city is a system.
-              <br />
-              Every change travels.
-            </h2>
-            <p>
-              MONSOON is an educational planning laboratory for a fictional
-              Bangladesh-inspired district. Explore how rainfall, surface
-              storage, soil and constrained drainage interact.
-            </p>
-            <ol className="guide">
-              <li>
-                <strong>Set the storm.</strong> Choose a rainfall profile and
-                adjust the drainage conditions.
-              </li>
-              <li>
-                <strong>Find the pressure points.</strong> Run the storm, scrub
-                time and inspect locations.
-              </li>
-              <li>
-                <strong>Make a plan.</strong> Invest 100 fictional credits in
-                paving, gardens, basins or drainage.
-              </li>
-              <li>
-                <strong>Compare the futures.</strong> Both designs receive
-                identical weather and initial conditions.
-              </li>
-            </ol>
-            <h3>What the model represents</h3>
-            <p>
-              Release 02 adds a configurable recovery window after rain stops.
-              Landmark cards sample entrance runoff and road access. Green
-              routes are available at the selected time; red routes are
-              dry-weather reference paths with a marker at the first flooded
-              segment. Recovery timing is sampled once per minute and does not
-              imply real-world safe passage.
-            </p>
-            <p>
-              A 100 × 100 grid with 10 m cells. Terrain and water heights are
-              exaggerated sixfold for visibility. Rainfall is added in
-              consistent physical units. Surface transfers conserve volume and
-              depend on water-surface elevation. Soil absorption and storage are
-              finite. Building roofs send rainfall to adjacent ground; building
-              cells block surface flow.
-            </p>
-            <p>
-              District edges are closed. Drains discharge through a shared
-              capacity limit. No sewer backflow, river tides, groundwater
-              feedback, evaporation or calibrated damage model is included. Flow
-              is a simplified storage-transfer scheme, not a shallow-water
-              solver.
-            </p>
-            <p>
-              Flooded area means depth above 10 cm. Streets close in the routing
-              model above 15 cm. These are illustrative analysis thresholds, not
-              real-world safe-passage guidance. Costs are fictional planning
-              credits.
-            </p>
-            <h3>Using the studio</h3>
-            <p>
-              Drag the model to orbit, scroll to zoom, or use the top-view
-              button. The coordinate inspector supports keyboard placement and
-              inspection. Reduced effects disables rainfall animation. Audio is
-              optional and only plays during timeline playback.
-            </p>
-            <p className="credits">
-              Original procedural district · Asifur Rahman Bhuiyan
-              <br />
-              Model {MODEL} · Results are uncalibrated scenario comparisons.
-            </p>
-          </>
+          <FieldNotes />
         ) : (
           valid && (
-            <>
-              <h2>
-                What changed
-                <br />
-                when the rain came.
-              </h2>
-              <p>
-                {s.duration}-minute {s.storm} storm · {s.intensity} mm/h
-                intensity setting · {s.interventions.length} interventions ·{" "}
-                {cost(s.interventions)} credits invested.
-              </p>
-              <History a={results.baseline} b={results.improved} />
-              <p>
-                Rain ends at minute {s.duration}; recovery continues for{" "}
-                {s.recovery ?? 0} minutes. End-of-run values below include
-                recovery.
-              </p>
-              <div className="chart-key">
-                <span>● Baseline</span>
-                <span>● Your design</span>
-                <small>Surface water storage over time</small>
-              </div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>At run end</th>
-                    <th>Baseline</th>
-                    <th>Your design</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(
-                    [
-                      ["Flooded area", "flooded", 10000, "ha"],
-                      ["Maximum depth", "maxDepth", 0.01, "cm"],
-                      ["Stored on surface", "stored", 1, "m³"],
-                      ["Infiltrated", "infiltrated", 1, "m³"],
-                      ["Drainage discharge", "discharged", 1, "m³"],
-                      ["Rainfall volume", "rain", 1, "m³"],
-                      ["Numerical residual", "residual", 1, "m³"],
-                    ] as const
-                  ).map(([label, key, div, unit]) => (
-                    <tr key={key}>
-                      <th>{label}</th>
-                      <td>
-                        {fmt(
-                          results.baseline.frames.at(-1)!.metrics[key] / div,
-                          3,
-                        )}{" "}
-                        {unit}
-                      </td>
-                      <td>
-                        {fmt(
-                          results.improved.frames.at(-1)!.metrics[key] / div,
-                          3,
-                        )}{" "}
-                        {unit}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <p>
-                Water accounting: rainfall = surface storage + infiltration +
-                discharge + numerical residual. Relative residual:{" "}
-                {(
-                  (Math.abs(results.improved.frames.at(-1)!.metrics.residual) /
-                    Math.max(1, results.improved.frames.at(-1)!.metrics.rain)) *
-                  100
-                ).toExponential(2)}
-                %.
-              </p>
-              <p>
-                Measured compute time: {fmt(results.baseline.elapsed)} ms
-                baseline / {fmt(results.improved.elapsed)} ms design on this
-                device. Frame rate and compute time are independent.
-              </p>
-              <button className="run" onClick={exportReport}>
-                <ArrowDownToLine size={16} /> Export report
-              </button>
-              <p className="credits">
-                Fictional district. Uncalibrated educational model. Both runs
-                use the same storm and initial conditions. Read Field notes for
-                assumptions.
-              </p>
-            </>
+            <ScenarioReport
+              s={s}
+              results={results}
+              exportReport={exportReport}
+            />
           )
         )}
       </dialog>
