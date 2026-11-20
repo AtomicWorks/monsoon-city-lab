@@ -1,5 +1,21 @@
 # MONSOON verification — 2 November 2026
 
+## Release 09 verification — 21 November 2026
+
+A maintenance release (package version 1.2.0) with no change to the simulation physics or model version (monsoon-1.3). Existing mission and conservation fixtures return their original results.
+
+All 48 automated tests pass: the 42 existing checks plus four storage tests and two worker-transfer tests. The storage tests run the real IndexedDB code against an in-memory database. They cover backing up an unreadable autosave instead of overwriting it, keeping only the newest three backups, restoring valid scenarios, and listing the Planning lab library when one saved plan cannot be read. The transfer tests check that every result buffer is sent once, including when the same result is both baseline and design. Type checks now cover the tests, the smoke test and the build configs.
+
+A new Playwright smoke test runs the production build in Chromium. It checks for a live WebGL 2 canvas, loaded self-hosted fonts, a storm run that fills the scenario results, and the Planning lab opening, with no console errors and no requests to other hosts. Deliberately breaking the build with a duplicated transfer buffer, and separately with an empty font file, made it fail. GitHub Actions now runs type checks, unit tests, the build and the smoke test on every pull request.
+
+Measurements:
+
+- **First load:** the script needed before the panels appear is 362 kB (114 kB gzipped), down from 926 kB (260 kB gzipped). three.js (517 kB, 130 kB gzipped), the 3D scene and the Planning lab load afterwards. The chunk-size warning limit was raised to 560 kB so the lazily loaded three.js chunk no longer triggers Vite's advisory; that chunk is not smaller.
+- **WebGL:** in Chromium, 70 consecutive district rebuilds caused no lost contexts. Before the fix, 11 replaced contexts were still alive afterwards; with `forceContextLoss()` each is released at once. Each rebuild still costs a main-thread task of about 75 ms, which this release does not change.
+- **Fonts:** DM Sans and Manrope are served from the app's own origin as four variable woff2 files (95 kB in total); the Google Fonts request is gone.
+
+Evidence: `docs/hero.jpg`, captured from the Protect the clinic demo at minute 24. No physical-device, Safari, formal accessibility or sustained frame-rate benchmark was performed.
+
 ## Release 08 verification — 10 November 2026
 
 All 42 automated tests pass: the 35 existing checks plus seven district tests. New coverage includes preset geometry, protected blocks, valid roof runoff receivers, immutable painting, invalid layouts and mission rejection, placement collisions, layout-aware routing, legacy model and share-link migration, saved-plan comparison, candidate validation and custom-map water conservation. The one-block tutorial fixture absorbs 85.456 m³ more water; existing mission fixtures remain unchanged.

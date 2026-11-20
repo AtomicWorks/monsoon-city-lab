@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased: maintenance
+## Release 09: maintenance (1.2.0)
 
 No change to the simulation physics or model version (monsoon-1.3).
 
