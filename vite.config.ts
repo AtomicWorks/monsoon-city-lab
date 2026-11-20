@@ -2,10 +2,10 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   build: {
-    // The three.js chunk is about 500 kB minified on its own. It cannot be
-    // split further and loads lazily with the 3D scene, so the warning
-    // threshold sits just above it; app chunks are far smaller.
-    chunkSizeWarningLimit: 560,
+    // The three.js chunk is about 570 kB minified on its own (0.187). It
+    // cannot be split further and loads lazily with the 3D scene, so the
+    // warning threshold sits just above it; app chunks are far smaller.
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         // Libraries change rarely; separate chunks stay cached across app

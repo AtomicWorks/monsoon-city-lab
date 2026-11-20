@@ -10,7 +10,11 @@ test("a visitor can load the district, run a storm and open the planning lab", a
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => {
-    if (m.type() === "error") errors.push(m.text());
+    // Performance notes from the software GL driver come from the test
+    // browser, not the app.
+    if (m.text().includes("GL Driver Message")) return;
+    if (m.type() === "error" || m.type() === "warning")
+      errors.push(`${m.type()}: ${m.text()}`);
   });
   const external: string[] = [];
   page.on("request", (r) => {
@@ -59,6 +63,6 @@ test("a visitor can load the district, run a storm and open the planning lab", a
     ).toBeVisible();
   });
 
-  expect(errors, "no console errors").toEqual([]);
+  expect(errors, "no console errors or warnings").toEqual([]);
   expect(external, "no requests to other hosts").toEqual([]);
 });

@@ -10,6 +10,7 @@ No change to the simulation physics or model version (monsoon-1.3).
 - **Lighter simulation hand-off.** The worker transfers result grids to the page instead of copying them.
 - **WebGL contexts are released** as soon as the 3D scene is rebuilt after a district edit, rather than when the browser garbage-collects the old canvas.
 - **Safety nets.** Storage tests run against an in-memory IndexedDB, tests and configs are type-checked, a Playwright smoke test exercises the production build, and GitHub Actions runs type checks, unit tests, the build and the smoke test on every pull request.
+- **Dependencies:** three.js 0.187 and Vite 6.4.6. three.js no longer has soft PCF shadows, so the scene asks for the standard PCF shadows it was already falling back to. The smoke test now also fails on console warnings.
 - An all-rights-reserved license notice.
 
 ## Release 08

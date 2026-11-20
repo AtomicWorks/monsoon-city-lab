@@ -74,7 +74,8 @@ export default function City(props: Props) {
     const el = host.current;
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = T.PCFSoftShadowMap;
+    // three.js 0.187 no longer has PCFSoftShadowMap and falls back to PCF.
+    renderer.shadowMap.type = T.PCFShadowMap;
     renderer.shadowMap.autoUpdate = false;
     renderer.setClearColor("#15211d");
     el.appendChild(renderer.domElement);
