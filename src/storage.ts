@@ -13,6 +13,18 @@ export type SavedPlan = {
   scenario: Scenario;
   summary?: Summary;
 };
+// A stored scenario this release cannot read. The original record has been
+// copied to `backupKey` in the "scenarios" store so later saves cannot lose it.
+export class UnreadableScenarioError extends Error {
+  constructor(
+    readonly backupKey: string,
+    readonly reason: string,
+  ) {
+    super(
+      "Your saved plan could not be opened by this version. A copy was kept on this device.",
+    );
+  }
+}
 function open(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const r = indexedDB.open("monsoon", 2);
@@ -44,42 +56,66 @@ export async function save(s: Scenario, key = "current") {
 export async function restore(key = "current"): Promise<Scenario | null> {
   const db = await open();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction("scenarios");
-    const r = tx.objectStore("scenarios").get(key);
+    const tx = db.transaction("scenarios", "readwrite"),
+      store = tx.objectStore("scenarios"),
+      r = store.get(key);
+    let result: Scenario | null = null,
+      failure: unknown = null;
     r.onsuccess = () => {
-      db.close();
+      if (!r.result) return;
       try {
-        resolve(r.result ? validate(r.result) : null);
+        result = validate(r.result);
       } catch (e) {
-        reject(e);
+        // Copy the record aside in the same transaction, so the error is only
+        // reported once the backup exists.
+        const backupKey = `unreadable-${key}-${Date.now()}`;
+        store.put(r.result, backupKey);
+        failure = new UnreadableScenarioError(
+          backupKey,
+          e instanceof Error ? e.message : String(e),
+        );
       }
     };
-    r.onerror = () => {
+    tx.oncomplete = () => {
       db.close();
-      reject(r.error);
+      if (failure) reject(failure);
+      else resolve(result);
+    };
+    tx.onerror = () => {
+      db.close();
+      reject(tx.error);
     };
   });
 }
-export async function library(): Promise<SavedPlan[]> {
+// Unreadable records stay in the database untouched; they are counted, not
+// listed, so one damaged plan cannot hide the others.
+export async function library(): Promise<{
+  plans: SavedPlan[];
+  unreadable: number;
+}> {
   const db = await open();
   return new Promise((resolve, reject) => {
     const tx = db.transaction("library"),
       r = tx.objectStore("library").getAll();
     r.onsuccess = () => {
-      try {
-        const plans = (r.result as SavedPlan[]).map((plan) => ({
-          ...plan,
-          title: currentScenarioName(plan.title),
-          scenario: {
-            ...plan.scenario,
-            name: currentScenarioName(plan.scenario.name),
-            layout: validateLayout(plan.scenario.layout),
-          },
-        }));
-        resolve(plans.sort((a, b) => b.updated - a.updated));
-      } catch (error) {
-        reject(error);
+      const plans: SavedPlan[] = [];
+      let unreadable = 0;
+      for (const plan of r.result as SavedPlan[]) {
+        try {
+          plans.push({
+            ...plan,
+            title: currentScenarioName(plan.title),
+            scenario: {
+              ...plan.scenario,
+              name: currentScenarioName(plan.scenario.name),
+              layout: validateLayout(plan.scenario.layout),
+            },
+          });
+        } catch {
+          unreadable++;
+        }
       }
+      resolve({ plans: plans.sort((a, b) => b.updated - a.updated), unreadable });
     };
     r.onerror = () => reject(r.error);
     tx.oncomplete = () => db.close();

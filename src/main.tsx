@@ -86,7 +86,12 @@ import {
   type Scenario,
   type Tool,
 } from "./engine";
-import { restore, save, writePlan } from "./storage";
+import {
+  UnreadableScenarioError,
+  restore,
+  save,
+  writePlan,
+} from "./storage";
 import "./style.css";
 import "./district.css";
 const fmt = (v: number, d = 0) =>
@@ -251,7 +256,9 @@ function App() {
     dialog = useRef<HTMLDialogElement>(null),
     bus = useRef<CameraBus>({ listeners: new Set() }),
     audio = useRef<AudioContext | null>(null),
-    soundGain = useRef<GainNode | null>(null);
+    soundGain = useRef<GainNode | null>(null),
+    autosaveBlocked = useRef(false),
+    pendingNotice = useRef("");
   const designMap = useMemo(() => districtFor(s.layout), [s.layout]);
   const baseScenario = useMemo(() => baselineScenario(s), [s]);
   const baseMap = useMemo(
@@ -534,9 +541,12 @@ function App() {
         setResults({ baseline: e.data.baseline, improved: e.data.improved });
         setIndex(e.data.improved.frames.length - 1);
         setProgress(null);
+        // A storage warning raised before this run outranks the completion note.
         inform(
-          "Rainfall and recovery complete. Inspect landmark impacts or compare designs.",
+          pendingNotice.current ||
+            "Rainfall and recovery complete. Inspect landmark impacts or compare designs.",
         );
+        pendingNotice.current = "";
         w.terminate();
       }
     };
@@ -557,14 +567,19 @@ function App() {
         setReady(true);
         run(value);
       })
-      .catch(() => {
-        if (alive) {
-          setReady(true);
-          run(DEFAULT);
-          inform(
-            "Local storage is unavailable. You can still export your scenario.",
-          );
+      .catch((e) => {
+        if (!alive) return;
+        if (e instanceof UnreadableScenarioError)
+          pendingNotice.current = `${e.message} Starting from the default district.`;
+        else {
+          // The saved plan may still be there; never autosave over a record
+          // that could not be read.
+          autosaveBlocked.current = true;
+          pendingNotice.current =
+            "Local storage is unavailable. You can still export your scenario.";
         }
+        setReady(true);
+        run(DEFAULT);
       });
     return () => {
       alive = false;
@@ -573,7 +588,7 @@ function App() {
     };
   }, []);
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || autosaveBlocked.current) return;
     setSaved(false);
     const id = setTimeout(() => {
       save(s)
@@ -644,7 +659,12 @@ function App() {
   }
   async function exitMission() {
     try {
-      const value = (await restore("sandbox")) || DEFAULT;
+      const value =
+        (await restore("sandbox").catch((e) => {
+          if (!(e instanceof UnreadableScenarioError)) throw e;
+          pendingNotice.current = `${e.message} Returning to the default district.`;
+          return null;
+        })) || DEFAULT;
       setS(value);
       setFocus(null);
       setTool(null);

@@ -135,7 +135,12 @@ export default function PlanningLab({ s, results, apply, close }: Props) {
   }, [preview]);
   async function refresh() {
     try {
-      setPlans(await library());
+      const { plans, unreadable } = await library();
+      setPlans(plans);
+      if (unreadable)
+        setMessage(
+          `${unreadable} saved ${unreadable === 1 ? "plan" : "plans"} could not be opened by this version and ${unreadable === 1 ? "is" : "are"} hidden. ${unreadable === 1 ? "It remains" : "They remain"} stored on this device.`,
+        );
     } catch {
       setMessage(
         "Local storage is unavailable. Saving and applying plans is disabled until storage works.",
