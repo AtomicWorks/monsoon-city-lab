@@ -1110,6 +1110,11 @@ export default function City(props: Props) {
           }
       });
       renderer.dispose();
+      // dispose() frees GPU resources but leaves the WebGL context alive until
+      // the canvas is garbage-collected. The scene is rebuilt on every
+      // district edit, so release it now rather than rely on GC timing.
+      // Called after dispose(), which removed three's context-lost handler.
+      renderer.forceContextLoss();
       el.replaceChildren();
     };
   }, [JSON.stringify(props.layout)]);
