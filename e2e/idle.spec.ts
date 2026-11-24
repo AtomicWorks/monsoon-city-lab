@@ -62,10 +62,23 @@ test("the 3D scene stops drawing when idle and redraws on change", async ({
   await expect(results.locator("strong").first()).toHaveText(/\d/, {
     timeout: 60_000,
   });
-  // Let the completion notice, camera and weather transitions settle.
-  await page.waitForTimeout(4000);
+  // Any app update wakes the scene for two frames, so first wait for the
+  // run's follow-up updates: the completion notice hides after 6.5 s, and
+  // autosave confirms when IndexedDB finishes (slower on CI machines). A
+  // fixed wait was not enough there.
+  await expect(page.locator(".toast")).toHaveAttribute(
+    "data-visible",
+    "false",
+    {
+      timeout: 20_000,
+    },
+  );
+  await expect(page.getByText("Saved on this device")).toBeVisible({
+    timeout: 20_000,
+  });
 
   await test.step("idle: no draws", async () => {
+    await settles(page);
     expect(await drawsDuring(page, 2000)).toBe(0);
   });
 
@@ -73,9 +86,11 @@ test("the 3D scene stops drawing when idle and redraws on change", async ({
     const slider = page.getByRole("slider", {
       name: "Simulation time in minutes",
     });
+    // Move to whichever end the slider is not already at.
+    const atStart = (await slider.inputValue()) === "0";
     const changed = await drawsDuring(page, 1500, async () => {
       await slider.focus();
-      await slider.press("End");
+      await slider.press(atStart ? "End" : "Home");
     });
     expect(changed).toBeGreaterThan(0);
     console.log(`timeline settled in ${await settles(page)} ms`);
