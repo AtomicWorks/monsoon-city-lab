@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Smoother district painting.** Each paint stroke, undo or preset switch used to throw away the whole 3D scene, including its WebGL context, and compile every shader again. Now only the layout-dependent parts (terrain, buildings, trees, details and traffic) are rebuilt, and the renderer, camera, lights and overlays stay. In the test browser the longest pause per edit fell from about 270 ms to 60–90 ms. A new browser test checks that edits keep the same canvas, create no WebGL context and compile no shaders.
+
 ## Release 10: a resting scene and readable text (1.3.0)
 
 No change to the simulation physics or model version (monsoon-1.3).

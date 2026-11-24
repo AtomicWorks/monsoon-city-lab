@@ -9,7 +9,7 @@ import {
   type AccessLayer,
 } from "./mobility";
 import type { Tier } from "./graphics";
-export function mobilityView(scene: T.Scene, map: District = DISTRICT) {
+export function mobilityView(scene: T.Object3D, map: District = DISTRICT) {
   const roads = new T.InstancedMesh(
     new T.PlaneGeometry(10, 10).rotateX(-Math.PI / 2),
     new T.MeshBasicMaterial({

@@ -60,7 +60,9 @@ export default function City(props: Props) {
   const host = useRef<HTMLDivElement>(null),
     latest = useRef(props),
     // Restarts the render loop after it has stopped for lack of motion.
-    wake = useRef(() => {});
+    wake = useRef(() => {}),
+    // Rebuilds the layout-dependent part of the scene for new props.
+    rebuild = useRef(() => {});
   latest.current = props;
   const [error, setError] = useState(false);
   // Every render may carry new props for the scene to show.
@@ -74,7 +76,8 @@ export default function City(props: Props) {
       setError(true);
       return;
     }
-    const DISTRICT = districtFor(props.layout);
+    let DISTRICT = districtFor(latest.current.layout);
+    let builtLayout = JSON.stringify(latest.current.layout);
     const el = host.current;
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
     renderer.shadowMap.enabled = true;
@@ -125,75 +128,9 @@ export default function City(props: Props) {
     brushMesh.frustumCulled = false;
     scene.add(brushMesh);
     const brushTransform = new T.Object3D();
-    const movement = mobilityView(scene, DISTRICT);
-    const details = cityDetails(DISTRICT);
-    scene.add(details);
-    const box = new T.BoxGeometry(1, 1, 1),
-      dummy = new T.Object3D();
+    const dummy = new T.Object3D();
     const mat = (c: string) =>
       new T.MeshStandardMaterial({ color: c, roughness: 0.9 });
-    const base = new T.Mesh(new T.BoxGeometry(1024, 24, 1024), mat("#35453b"));
-    base.position.y = -15;
-    base.receiveShadow = true;
-    scene.add(base);
-    const groundPlane = new T.Mesh(
-      new T.PlaneGeometry(10000, 10000),
-      mat("#15211d"),
-    );
-    groundPlane.rotation.x = -Math.PI / 2;
-    groundPlane.position.y = -30;
-    groundPlane.receiveShadow = true;
-    scene.add(groundPlane);
-    const grid = new T.GridHelper(4000, 80, "#2c3d32", "#203128");
-    grid.position.y = -29;
-    scene.add(grid);
-    const positions: number[] = [],
-      colors: number[] = [];
-    const palette = [
-      "#52664b",
-      "#a6aa96",
-      "#7b8265",
-      "#3d6962",
-      "#7b8265",
-      "#656e69",
-    ];
-    for (let y = 0; y < N; y++)
-      for (let x = 0; x < N; x++) {
-        const i = y * N + x,
-          h = DISTRICT.z[i] * 6,
-          c = new T.Color(palette[DISTRICT.kind[i]]);
-        c.multiplyScalar(0.94 + 0.06 * Math.sin(x * 43 + y * 17));
-        for (const [dx, dy] of [
-          [0, 0],
-          [0, 1],
-          [1, 0],
-          [1, 0],
-          [0, 1],
-          [1, 1],
-        ]) {
-          positions.push((x + dx) * CELL - 500, h, (y + dy) * CELL - 500);
-          colors.push(c.r, c.g, c.b);
-        }
-      }
-    const geo = new T.BufferGeometry();
-    geo.setAttribute("position", new T.Float32BufferAttribute(positions, 3));
-    geo.setAttribute("color", new T.Float32BufferAttribute(colors, 3));
-    geo.computeVertexNormals();
-    const terrain = new T.Mesh(
-      geo,
-      new T.MeshStandardMaterial({
-        vertexColors: true,
-        roughness: 1,
-        side: T.DoubleSide,
-      }),
-    );
-    terrain.receiveShadow = true;
-    scene.add(terrain);
-    const buildings = new T.InstancedMesh(box, mat("#c5c7af"), 120),
-      roofs = new T.InstancedMesh(box, mat("#8a9687"), 120),
-      units = new T.InstancedMesh(box, mat("#b6bcad"), 240);
-    let count = 0,
-      uc = 0;
     const block = (
       mesh: T.InstancedMesh,
       k: number,
@@ -210,94 +147,213 @@ export default function City(props: Props) {
       dummy.updateMatrix();
       mesh.setMatrixAt(k, dummy.matrix);
     };
-    for (let y = 4; y < 100; y += 10)
-      for (let x = 4; x < 100; x += 10) {
-        if (DISTRICT.kind[y * N + x] !== 4) continue;
-        const seed =
-            Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1,
-          h = 16 + Math.floor(seed * 6) * 9,
-          b = DISTRICT.z[y * N + x] * 6,
-          cx = x * 10 - 500,
-          cz = y * 10 - 500;
-        block(buildings, count, cx, b + h / 2, cz, 36, h, 36);
-        buildings.setColorAt(
-          count,
-          new T.Color(
-            ["#c4c5ad", "#d4ceb4", "#a8b3a4", "#b4baa8"][Math.floor(seed * 4)],
-          ),
-        );
-        block(roofs, count, cx, b + h + 1, cz, 38, 2, 38);
-        block(units, uc++, cx - 9, b + h + 4, cz - 6, 8, 6, 8);
-        block(units, uc++, cx + 8, b + h + 3, cz + 8, 5, 4, 10);
-        count++;
-      }
-    buildings.count = count;
-    roofs.count = count;
-    units.count = uc;
-    for (const m of [buildings, roofs, units]) {
-      m.castShadow = true;
-      m.receiveShadow = true;
-      scene.add(m);
-    }
-    const crowns = new T.InstancedMesh(
-        new T.IcosahedronGeometry(1, 1),
-        mat("#6f8b56"),
-        1200,
-      ),
-      trunks = new T.InstancedMesh(box, mat("#59624b"), 1200);
-    let tc = 0;
-    for (let y = 2; y < 98; y += 3)
-      for (let x = 2; x < 98; x += 3) {
-        const i = y * N + x;
-        if (
-          DISTRICT.kind[i] !== 0 &&
-          !(DISTRICT.kind[i] === 2 && (x * 7 + y * 3) % 11 === 0)
-        )
-          continue;
-        const h = DISTRICT.z[i] * 6;
-        block(trunks, tc, x * 10 - 495, h + 5, y * 10 - 495, 1.8, 10, 1.8);
-        block(crowns, tc, x * 10 - 495, h + 13, y * 10 - 495, 7, 10, 7);
-        tc++;
-        if (tc >= 1200) break;
-      }
-    crowns.count = trunks.count = tc;
-    crowns.castShadow = true;
-    scene.add(crowns, trunks);
-    const constructionStart = performance.now();
-    const growing: {
+    const base = new T.Mesh(new T.BoxGeometry(1024, 24, 1024), mat("#35453b"));
+    base.position.y = -15;
+    base.receiveShadow = true;
+    scene.add(base);
+    const groundPlane = new T.Mesh(
+      new T.PlaneGeometry(10000, 10000),
+      mat("#15211d"),
+    );
+    groundPlane.rotation.x = -Math.PI / 2;
+    groundPlane.position.y = -30;
+    groundPlane.receiveShadow = true;
+    scene.add(groundPlane);
+    const grid = new T.GridHelper(4000, 80, "#2c3d32", "#203128");
+    grid.position.y = -29;
+    scene.add(grid);
+    // Everything built from the district layout lives in one group. A
+    // layout change replaces the group; the renderer, camera, lights and
+    // overlays persist, so no WebGL context is created and no shader is
+    // recompiled.
+    type Growing = {
       mesh: T.InstancedMesh;
       index: number;
       matrix: T.Matrix4;
       base: number;
-    }[] = [];
-    const constructionLots = new Set(props.construction ?? []);
-    const original = new T.Matrix4(),
-      point = new T.Vector3();
-    for (const mesh of [
-      buildings,
-      roofs,
-      units,
-      crowns,
-      trunks,
-      ...(details.children.filter(
-        (o) => o instanceof T.InstancedMesh,
-      ) as T.InstancedMesh[]),
-    ]) {
-      for (let i = 0; i < mesh.count; i++) {
-        mesh.getMatrixAt(i, original);
-        point.setFromMatrixPosition(original);
-        const x = Math.min(99, Math.max(0, Math.floor((point.x + 500) / 10))),
-          y = Math.min(99, Math.max(0, Math.floor((point.z + 500) / 10)));
-        if (constructionLots.has(Math.floor(y / 10) * 10 + Math.floor(x / 10)))
-          growing.push({
-            mesh,
-            index: i,
-            matrix: original.clone(),
-            base: DISTRICT.z[y * N + x] * 6,
-          });
+    };
+    let districtGroup = new T.Group();
+    let movement: ReturnType<typeof mobilityView>,
+      details: ReturnType<typeof cityDetails>,
+      geo: T.BufferGeometry,
+      terrain: T.Mesh;
+    let growing: Growing[] = [],
+      constructionLots = new Set<number>(),
+      constructionStart = 0,
+      constructionDone = true;
+    const buildDistrict = (lots: number[]) => {
+      const group = new T.Group();
+      movement = mobilityView(group, DISTRICT);
+      details = cityDetails(DISTRICT);
+      details.visible = QUALITY[latest.current.quality].details;
+      group.add(details);
+      const box = new T.BoxGeometry(1, 1, 1);
+      const positions: number[] = [],
+        colors: number[] = [];
+      const palette = [
+        "#52664b",
+        "#a6aa96",
+        "#7b8265",
+        "#3d6962",
+        "#7b8265",
+        "#656e69",
+      ];
+      for (let y = 0; y < N; y++)
+        for (let x = 0; x < N; x++) {
+          const i = y * N + x,
+            h = DISTRICT.z[i] * 6,
+            c = new T.Color(palette[DISTRICT.kind[i]]);
+          c.multiplyScalar(0.94 + 0.06 * Math.sin(x * 43 + y * 17));
+          for (const [dx, dy] of [
+            [0, 0],
+            [0, 1],
+            [1, 0],
+            [1, 0],
+            [0, 1],
+            [1, 1],
+          ]) {
+            positions.push((x + dx) * CELL - 500, h, (y + dy) * CELL - 500);
+            colors.push(c.r, c.g, c.b);
+          }
+        }
+      geo = new T.BufferGeometry();
+      geo.setAttribute("position", new T.Float32BufferAttribute(positions, 3));
+      geo.setAttribute("color", new T.Float32BufferAttribute(colors, 3));
+      geo.computeVertexNormals();
+      terrain = new T.Mesh(
+        geo,
+        new T.MeshStandardMaterial({
+          vertexColors: true,
+          roughness: 1,
+          side: T.DoubleSide,
+        }),
+      );
+      terrain.receiveShadow = true;
+      group.add(terrain);
+      const buildings = new T.InstancedMesh(box, mat("#c5c7af"), 120),
+        roofs = new T.InstancedMesh(box, mat("#8a9687"), 120),
+        units = new T.InstancedMesh(box, mat("#b6bcad"), 240);
+      let count = 0,
+        uc = 0;
+      for (let y = 4; y < 100; y += 10)
+        for (let x = 4; x < 100; x += 10) {
+          if (DISTRICT.kind[y * N + x] !== 4) continue;
+          const seed =
+              Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1,
+            h = 16 + Math.floor(seed * 6) * 9,
+            b = DISTRICT.z[y * N + x] * 6,
+            cx = x * 10 - 500,
+            cz = y * 10 - 500;
+          block(buildings, count, cx, b + h / 2, cz, 36, h, 36);
+          buildings.setColorAt(
+            count,
+            new T.Color(
+              ["#c4c5ad", "#d4ceb4", "#a8b3a4", "#b4baa8"][Math.floor(seed * 4)],
+            ),
+          );
+          block(roofs, count, cx, b + h + 1, cz, 38, 2, 38);
+          block(units, uc++, cx - 9, b + h + 4, cz - 6, 8, 6, 8);
+          block(units, uc++, cx + 8, b + h + 3, cz + 8, 5, 4, 10);
+          count++;
+        }
+      buildings.count = count;
+      roofs.count = count;
+      units.count = uc;
+      for (const m of [buildings, roofs, units]) {
+        m.castShadow = true;
+        m.receiveShadow = true;
+        group.add(m);
       }
-    }
-    let constructionDone = false;
+      const crowns = new T.InstancedMesh(
+          new T.IcosahedronGeometry(1, 1),
+          mat("#6f8b56"),
+          1200,
+        ),
+        trunks = new T.InstancedMesh(box, mat("#59624b"), 1200);
+      let tc = 0;
+      for (let y = 2; y < 98; y += 3)
+        for (let x = 2; x < 98; x += 3) {
+          const i = y * N + x;
+          if (
+            DISTRICT.kind[i] !== 0 &&
+            !(DISTRICT.kind[i] === 2 && (x * 7 + y * 3) % 11 === 0)
+          )
+            continue;
+          const h = DISTRICT.z[i] * 6;
+          block(trunks, tc, x * 10 - 495, h + 5, y * 10 - 495, 1.8, 10, 1.8);
+          block(crowns, tc, x * 10 - 495, h + 13, y * 10 - 495, 7, 10, 7);
+          tc++;
+          if (tc >= 1200) break;
+        }
+      crowns.count = trunks.count = tc;
+      crowns.castShadow = true;
+      group.add(crowns, trunks);
+      for (const l of LANDMARKS) {
+        const seed =
+            Math.abs(Math.sin(l.x * 12.9898 + l.y * 78.233) * 43758.5453) % 1,
+          roofY =
+            DISTRICT.z[l.y * N + l.x] * 6 + 16 + Math.floor(seed * 6) * 9 + 3;
+        const addDetail = (
+          dx: number,
+          dz: number,
+          w: number,
+          h: number,
+          d: number,
+          color: string,
+        ) => {
+          const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat(color));
+          m.position.set(l.x * 10 - 500 + dx, roofY + h / 2, l.y * 10 - 500 + dz);
+          m.castShadow = true;
+          group.add(m);
+        };
+        if (l.id === "clinic") {
+          addDetail(0, 0, 24, 1, 6, "#be6a58");
+          addDetail(0, 0, 6, 1.2, 24, "#be6a58");
+        }
+        if (l.id === "school") {
+          for (let n = 0; n < 3; n++)
+            addDetail(-10 + n * 10, 0, 7, 2, 23, "#365777");
+          addDetail(0, 21, 36, 9, 5, "#c9b77b");
+        }
+        if (l.id === "market") {
+          for (let n = 0; n < 6; n++)
+            addDetail(-15 + n * 6, 23, 6, 2, 16, n % 2 ? "#d5b46f" : "#7d9971");
+        }
+      }
+      constructionStart = performance.now();
+      growing = [];
+      constructionLots = new Set(lots);
+      const original = new T.Matrix4(),
+        point = new T.Vector3();
+      for (const mesh of [
+        buildings,
+        roofs,
+        units,
+        crowns,
+        trunks,
+        ...(details.children.filter(
+          (o) => o instanceof T.InstancedMesh,
+        ) as T.InstancedMesh[]),
+      ]) {
+        for (let i = 0; i < mesh.count; i++) {
+          mesh.getMatrixAt(i, original);
+          point.setFromMatrixPosition(original);
+          const x = Math.min(99, Math.max(0, Math.floor((point.x + 500) / 10))),
+            y = Math.min(99, Math.max(0, Math.floor((point.z + 500) / 10)));
+          if (constructionLots.has(Math.floor(y / 10) * 10 + Math.floor(x / 10)))
+            growing.push({
+              mesh,
+              index: i,
+              matrix: original.clone(),
+              base: DISTRICT.z[y * N + x] * 6,
+            });
+        }
+      }
+      constructionDone = false;
+      scene.add(group);
+      districtGroup = group;
+    };
+    buildDistrict(latest.current.construction ?? []);
     const waterSurface = waterMaterial();
     const waterGeo = new T.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
     const dryEdges = new T.InstancedBufferAttribute(
@@ -356,38 +412,6 @@ export default function City(props: Props) {
       scene.add(sprite);
     }
     const patches = new T.Group();
-    for (const l of LANDMARKS) {
-      const seed =
-          Math.abs(Math.sin(l.x * 12.9898 + l.y * 78.233) * 43758.5453) % 1,
-        roofY =
-          DISTRICT.z[l.y * N + l.x] * 6 + 16 + Math.floor(seed * 6) * 9 + 3;
-      const addDetail = (
-        dx: number,
-        dz: number,
-        w: number,
-        h: number,
-        d: number,
-        color: string,
-      ) => {
-        const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat(color));
-        m.position.set(l.x * 10 - 500 + dx, roofY + h / 2, l.y * 10 - 500 + dz);
-        m.castShadow = true;
-        scene.add(m);
-      };
-      if (l.id === "clinic") {
-        addDetail(0, 0, 24, 1, 6, "#be6a58");
-        addDetail(0, 0, 6, 1.2, 24, "#be6a58");
-      }
-      if (l.id === "school") {
-        for (let n = 0; n < 3; n++)
-          addDetail(-10 + n * 10, 0, 7, 2, 23, "#365777");
-        addDetail(0, 21, 36, 9, 5, "#c9b77b");
-      }
-      if (l.id === "market") {
-        for (let n = 0; n < 6; n++)
-          addDetail(-15 + n * 6, 23, 6, 2, 16, n % 2 ? "#d5b46f" : "#7d9971");
-      }
-    }
     const routeLine = new T.Line(
       new T.BufferGeometry(),
       new T.LineBasicMaterial({
@@ -1146,10 +1170,40 @@ export default function City(props: Props) {
       lastTime = performance.now();
       frame = requestAnimationFrame(animate);
     };
+    // Frees a replaced district's GPU buffers. Its materials are left to the
+    // garbage collector rather than disposed: disposing a material releases
+    // its shader once no other material holds it, and a new district's
+    // materials only claim shaders when they first draw, so off-screen or
+    // hidden parts would be recompiled later. These materials have no
+    // textures; the whole scene, materials included, is disposed on unmount.
+    const releaseDistrict = (g: T.Object3D) =>
+      g.traverse((o) => {
+        if ((o as T.Mesh).geometry) (o as T.Mesh).geometry.dispose();
+        if ((o as T.InstancedMesh).isInstancedMesh)
+          (o as T.InstancedMesh).dispose();
+      });
+    rebuild.current = () => {
+      const key = JSON.stringify(latest.current.layout);
+      if (key === builtLayout) return;
+      builtLayout = key;
+      DISTRICT = districtFor(latest.current.layout);
+      scene.remove(districtGroup);
+      releaseDistrict(districtGroup);
+      buildDistrict(latest.current.construction ?? []);
+      // Recompute everything derived from the old terrain on the next frame.
+      z = DISTRICT.z;
+      lastItems = "";
+      lastDepth = undefined;
+      activityDepth = undefined;
+      lastRoute = undefined;
+      renderer.shadowMap.needsUpdate = true;
+      wake.current();
+    };
     controls.addEventListener("change", wake.current);
     wake.current();
     return () => {
       wake.current = () => {};
+      rebuild.current = () => {};
       cancelAnimationFrame(frame);
       observer.disconnect();
       props.bus.listeners.delete(sync);
@@ -1178,7 +1232,11 @@ export default function City(props: Props) {
       renderer.forceContextLoss();
       el.replaceChildren();
     };
-  }, [JSON.stringify(props.layout)]);
+    // The scene is built once per mount; layout changes go through rebuild.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const layoutKey = JSON.stringify(props.layout);
+  useEffect(() => rebuild.current(), [layoutKey]);
   return (
     <div
       className="city"
