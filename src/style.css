@@ -96,7 +96,7 @@ button svg {
   display: block;
   font-family: "DM Sans", sans-serif;
   letter-spacing: 2.3px;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 500;
   color: #a9b8a7;
   margin-top: 3px;
@@ -191,7 +191,7 @@ button svg {
   border-bottom: 1px solid var(--line);
 }
 .eyebrow {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 1.8px;
   font-weight: 600;
   display: flex;
@@ -225,7 +225,7 @@ button svg {
   display: flex;
   gap: 8px;
   margin-top: 19px;
-  font-size: 8px;
+  font-size: 10px;
   color: #acb9a6;
 }
 .district-meta span + span:before {
@@ -260,7 +260,7 @@ button svg {
   height: 2px;
 }
 .side-tabs button span {
-  font-size: 8px;
+  font-size: 9px;
   background: #334330;
   border-radius: 3px;
   padding: 2px 4px;
@@ -273,7 +273,7 @@ button svg {
   scrollbar-color: #4d5a46 transparent;
 }
 .section-label {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 1.4px;
   color: #b4c2aa;
   display: flex;
@@ -308,7 +308,7 @@ button svg {
 }
 .storm-option small {
   display: block;
-  font-size: 9px;
+  font-size: 10px;
   color: #a8b39e;
   margin-top: 4px;
 }
@@ -335,7 +335,7 @@ button svg {
 .chart-caption {
   display: flex;
   justify-content: space-between;
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 1px;
   color: #a0ae95;
   margin: 1px 0 20px;
@@ -399,7 +399,7 @@ input[type="range"]::-moz-range-thumb {
   color: #9eb58c;
 }
 .hint p {
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.7;
   margin: 0;
   color: #9eaf96;
@@ -432,7 +432,7 @@ input[type="range"]::-moz-range-thumb {
 .model-caption {
   display: block;
   text-align: center;
-  font-size: 6.5px;
+  font-size: 9px;
   letter-spacing: 1.35px;
   color: #92a28b;
   margin-top: 10px;
@@ -458,7 +458,7 @@ input[type="range"]::-moz-range-thumb {
   pointer-events: none;
 }
 .map-heading .eyebrow {
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 1.6px;
   color: #a9b9a5;
 }
@@ -490,7 +490,7 @@ input[type="range"]::-moz-range-thumb {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 1px;
   background: #1c2c23b8;
 }
@@ -581,7 +581,7 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 4px;
 }
 .depth-legend > span {
-  font-size: 6.5px;
+  font-size: 9px;
   letter-spacing: 1.1px;
   color: #bac9af;
 }
@@ -596,13 +596,13 @@ input[type="range"]::-moz-range-thumb {
 .depth-legend > div:last-child {
   display: flex;
   justify-content: space-between;
-  font-size: 7px;
+  font-size: 10px;
   color: #afbfaa;
 }
 .map-scale {
   text-align: right;
   color: #b3c1aa;
-  font-size: 8px;
+  font-size: 10px;
 }
 .map-scale i {
   display: block;
@@ -613,7 +613,7 @@ input[type="range"]::-moz-range-thumb {
   margin: 4px 0 9px auto;
 }
 .map-scale small {
-  font-size: 8px;
+  font-size: 10px;
   color: #a4b39c;
 }
 .timeline {
@@ -641,7 +641,7 @@ input[type="range"]::-moz-range-thumb {
   white-space: nowrap;
 }
 .time-readout small {
-  font-size: 8px;
+  font-size: 9px;
   color: #a3b099;
   letter-spacing: 0.5px;
   margin-left: 4px;
@@ -656,7 +656,7 @@ input[type="range"]::-moz-range-thumb {
 .timeline-track > div {
   display: flex;
   justify-content: space-between;
-  font-size: 6px;
+  font-size: 9px;
   letter-spacing: 1px;
   color: #a7b89d;
   margin-top: 9px;
@@ -694,7 +694,7 @@ input[type="range"]::-moz-range-thumb {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 1.1px;
   color: #afbea5;
   gap: 8px;
@@ -719,7 +719,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .metrics p {
   margin: 9px 0 0;
-  font-size: 8px;
+  font-size: 10px;
   color: #99ad8d;
 }
 .positive {
@@ -738,7 +738,7 @@ input[type="range"]::-moz-range-thumb {
   gap: 12px;
 }
 .footer > span {
-  font-size: 6px;
+  font-size: 9px;
   letter-spacing: 1.4px;
   color: #b2c39f;
   display: flex;
@@ -746,7 +746,7 @@ input[type="range"]::-moz-range-thumb {
   gap: 7px;
 }
 .footer button {
-  font-size: 7px;
+  font-size: 10px;
   color: #a9b99c;
   display: flex;
   gap: 5px;
@@ -800,13 +800,13 @@ input[type="range"]::-moz-range-thumb {
 .tool-card strong small {
   display: block;
   margin-top: 5px;
-  font-size: 8px;
+  font-size: 10px;
   color: #a9b99b;
   font-weight: 400;
 }
 .tool-card p {
   grid-column: 1/-1;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.7;
   color: #a7b69c;
   margin: 0;
@@ -820,7 +820,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .placement-number {
   color: #b6cd96;
-  font-size: 8px;
+  font-size: 9px;
 }
 .placed > button:not(.icon-button) {
   font-size: 10px;
@@ -830,7 +830,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .placed small {
   display: block;
-  font-size: 8px;
+  font-size: 10px;
   color: #9fb28f;
   margin-top: 4px;
 }
@@ -864,7 +864,7 @@ input[type="range"]::-moz-range-thumb {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 1px;
   color: #b5cd9d;
 }
@@ -881,7 +881,7 @@ input[type="range"]::-moz-range-thumb {
 .inspect-stats {
   display: flex;
   gap: 22px;
-  font-size: 9px;
+  font-size: 10px;
   color: #b0c09f;
 }
 .inspect-stats strong {
@@ -896,7 +896,7 @@ input[type="range"]::-moz-range-thumb {
   color: #b0c09f;
 }
 .inspector p {
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.8;
   color: #b5c5a6;
 }
@@ -1084,7 +1084,7 @@ th:first-child {
 }
 thead th {
   color: #a7bd94;
-  font-size: 9px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -1139,10 +1139,10 @@ tbody td:last-child {
     font-size: 12px;
   }
   .map-heading .eyebrow {
-    font-size: 8px;
+    font-size: 9px;
   }
   .metric-label {
-    font-size: 8px;
+    font-size: 9px;
   }
   .metrics p {
     font-size: 10px;
@@ -1174,20 +1174,20 @@ tbody td:last-child {
     padding: 0 13px;
   }
   .metric-label {
-    font-size: 6px;
+    font-size: 9px;
     letter-spacing: 0.7px;
   }
   .metric-label svg {
     display: none;
   }
   .metrics p {
-    font-size: 7px;
+    font-size: 10px;
   }
   .map-heading h2 {
     font-size: 26px;
   }
   .report-button {
-    font-size: 9px;
+    font-size: 10px;
     gap: 5px;
   }
   .timeline {
@@ -1198,7 +1198,7 @@ tbody td:last-child {
     font-size: 20px;
   }
   .timeline-track > div {
-    font-size: 5px;
+    font-size: 9px;
   }
   .inspector {
     width: 210px;
@@ -1224,7 +1224,7 @@ tbody td:last-child {
     height: 36px;
   }
   .brand small {
-    font-size: 6px;
+    font-size: 9px;
   }
   .header nav {
     display: none;
@@ -1274,7 +1274,7 @@ tbody td:last-child {
     font-size: 10px;
   }
   .storm-option small {
-    font-size: 8px;
+    font-size: 10px;
     line-height: 1.5;
     min-height: 24px;
   }
@@ -1304,7 +1304,7 @@ tbody td:last-child {
     padding: 12px 22px;
   }
   .model-caption {
-    font-size: 7px;
+    font-size: 9px;
   }
   .main {
     order: 1;
@@ -1325,7 +1325,7 @@ tbody td:last-child {
     font-size: 10px;
   }
   .map-heading .eyebrow {
-    font-size: 6px;
+    font-size: 9px;
   }
   .map-tools {
     right: 14px;
@@ -1338,7 +1338,7 @@ tbody td:last-child {
   .map-status {
     bottom: 110px;
     right: 15px;
-    font-size: 6px;
+    font-size: 9px;
   }
   .map-bottom {
     left: 18px;
@@ -1350,10 +1350,10 @@ tbody td:last-child {
     padding: 10px;
   }
   .depth-legend > span {
-    font-size: 5px;
+    font-size: 9px;
   }
   .map-scale small {
-    font-size: 6px;
+    font-size: 10px;
   }
   .timeline {
     padding: 15px 16px;
@@ -1367,13 +1367,13 @@ tbody td:last-child {
     font-size: 20px;
   }
   .timeline-track > div {
-    font-size: 5px;
+    font-size: 9px;
   }
   .timeline-divider {
     display: none;
   }
   .report-button {
-    font-size: 9px;
+    font-size: 10px;
   }
   .metrics {
     grid-template-columns: 1fr 1fr;
@@ -1395,20 +1395,20 @@ tbody td:last-child {
     margin-top: 9px;
   }
   .metric-label {
-    font-size: 7px;
+    font-size: 9px;
   }
   .metrics p {
-    font-size: 8px;
+    font-size: 10px;
   }
   .footer {
     padding: 10px 20px;
   }
   .footer > span {
-    font-size: 5px;
+    font-size: 9px;
     letter-spacing: 0.7px;
   }
   .footer button {
-    font-size: 6px;
+    font-size: 10px;
   }
   .inspector,
   .locator {
@@ -1431,10 +1431,10 @@ tbody td:last-child {
     font-size: 10px;
   }
   .tool-card p {
-    font-size: 9px;
+    font-size: 10px;
   }
   .tool-card strong small {
-    font-size: 8px;
+    font-size: 10px;
   }
   .toast {
     font-size: 10px;
@@ -1451,7 +1451,7 @@ tbody td:last-child {
   }
   .map-canvases.split .view-label {
     bottom: 15px;
-    font-size: 7px;
+    font-size: 9px;
     left: 20px;
     transform: none;
     padding: 5px;
@@ -1472,7 +1472,7 @@ tbody td:last-child {
     font-size: 29px;
   }
   .chart-key {
-    font-size: 8px;
+    font-size: 9px;
     gap: 9px;
   }
   .chart-key small {
@@ -1507,7 +1507,7 @@ tbody td:last-child {
   width: 14px;
 }
 .release-kicker {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 1.2px;
   color: #c7df9c;
   display: flex;
@@ -1531,12 +1531,12 @@ tbody td:last-child {
   margin: 17px 0;
 }
 .guide-card .section-label {
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 0.8px;
   margin-bottom: 8px;
 }
 .guide-card .section-label button {
-  font-size: 8px;
+  font-size: 9px;
   color: #c0d6a0;
   text-decoration: underline;
   letter-spacing: 0;
@@ -1567,7 +1567,7 @@ tbody td:last-child {
   box-shadow: inset 3px 0 #c5df94;
 }
 .mission-card .eyebrow {
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 1px;
   color: #afc095;
 }
@@ -1586,7 +1586,7 @@ tbody td:last-child {
 .mission-facts {
   display: flex;
   gap: 12px;
-  font-size: 8px;
+  font-size: 10px;
   color: #a0b98b;
   margin: 12px 0;
 }
@@ -1653,7 +1653,7 @@ tbody td:last-child {
 }
 .landmark-status {
   display: block;
-  font-size: 9px;
+  font-size: 10px;
   margin: 10px 0;
   color: #bdceab;
 }
@@ -1664,7 +1664,7 @@ tbody td:last-child {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  font-size: 9px;
+  font-size: 10px;
   padding: 7px 0;
   border-top: 1px solid #35482f;
 }
@@ -1678,7 +1678,7 @@ tbody td:last-child {
 }
 .landmark-card dd small {
   display: block;
-  font-size: 8px;
+  font-size: 10px;
   color: #96aa84;
 }
 .landmark-link {
@@ -1686,7 +1686,7 @@ tbody td:last-child {
   align-items: center;
   gap: 6px;
   color: #c3db9b;
-  font-size: 9px;
+  font-size: 10px;
   margin-top: 10px;
 }
 .recovery-card {
@@ -1721,7 +1721,7 @@ tbody td:last-child {
 }
 .recovery-card p,
 .micro-note {
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.8;
   color: #a5bb90;
 }
@@ -1741,7 +1741,7 @@ tbody td:last-child {
   border: 1px solid #708b52;
   border-radius: 4px;
   color: #d4e6b5;
-  font-size: 9px;
+  font-size: 10px;
   max-width: calc(100% - 105px);
 }
 .focus-banner button {
@@ -1789,14 +1789,14 @@ tbody td:last-child {
   .focus-banner {
     left: 16px;
     top: 112px;
-    font-size: 8px;
+    font-size: 10px;
     max-width: calc(100% - 75px);
   }
   .map-tools {
     top: 165px;
   }
   .timeline-track > div {
-    font-size: 5px;
+    font-size: 9px;
     gap: 4px;
   }
   .mission-facts {
@@ -2417,7 +2417,7 @@ select:focus-visible {
   gap: 8px;
 }
 .welcome-line .eyebrow {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 1.2px;
 }
 .welcome-line button {
@@ -2623,7 +2623,7 @@ dialog.help-dialog {
 }
 .help-topic summary small {
   display: block;
-  font-size: 9px;
+  font-size: 10px;
   color: #a9bd95;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -2756,7 +2756,7 @@ dialog.help-dialog {
 }
 .tour-card > small {
   display: block;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.6;
   color: #a8bb98;
   margin-top: 13px;
@@ -3112,7 +3112,7 @@ dialog[open] {
 }
 .event-time small {
   display: block;
-  font-size: 7px;
+  font-size: 9px;
   letter-spacing: 1px;
   margin-top: 4px;
 }
@@ -3147,7 +3147,7 @@ dialog[open] {
   background: #382d24;
 }
 .story-card .eyebrow {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 1px;
   color: #bacc9f;
 }
@@ -3188,7 +3188,7 @@ dialog[open] {
   margin: 10px 0;
 }
 .demo-card .eyebrow {
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.8px;
   color: #b6cb9c;
 }
@@ -3278,7 +3278,7 @@ dialog[open] {
   border: 1px solid #556e47;
   border-radius: 6px;
   pointer-events: none;
-  font-size: 9px;
+  font-size: 10px;
   color: #d4e3bc;
 }
 .map-canvases.reveal {
@@ -3433,7 +3433,7 @@ dialog[open] {
 }
 .cinema-actions small {
   color: #a5b997;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.6;
 }
 .map-area:has(.cinema-card) .map-bottom,
@@ -3483,18 +3483,18 @@ dialog.shared-dialog {
     max-width: calc(100% - 65px);
   }
   .experience-map-actions button {
-    font-size: 8px;
+    font-size: 10px;
     padding: 7px;
   }
   .focus-banner {
     top: 198px;
     left: 16px;
-    font-size: 8px;
+    font-size: 10px;
   }
   .activity-legend {
     left: 16px;
     bottom: 89px;
-    font-size: 7px;
+    font-size: 10px;
     max-width: calc(100% - 76px);
     padding: 7px;
   }
@@ -3525,14 +3525,14 @@ dialog.shared-dialog {
   }
   .cinema-actions small {
     flex-basis: 100%;
-    font-size: 8px;
+    font-size: 10px;
   }
   .map-area:has(.cinema-card) .activity-legend {
     display: none;
   }
   .reveal-control {
     bottom: 15px;
-    font-size: 9px;
+    font-size: 10px;
     padding: 10px;
     width: calc(100% - 40px);
     gap: 8px;
@@ -3622,7 +3622,7 @@ dialog.shared-dialog {
 .service-key {
   display: grid;
   gap: 7px;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.5;
   margin: 20px 0;
 }
@@ -3692,7 +3692,7 @@ dialog.shared-dialog {
   border-radius: 7px;
 }
 .mobility-legend b {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 1px;
 }
 .mobility-legend span {
@@ -3700,7 +3700,7 @@ dialog.shared-dialog {
   color: #d0dfbf;
 }
 .mobility-legend small {
-  font-size: 9px;
+  font-size: 10px;
   color: #afc09e;
 }
 .map-area:not([data-layer="water"]) .depth-legend {
@@ -3732,7 +3732,7 @@ dialog.shared-dialog {
   border: 1px solid #56704c;
   border-radius: 4px;
   padding: 5px 6px;
-  font-size: 9px;
+  font-size: 10px;
 }
 .redo-edit {
   font-size: 10px;
@@ -3757,7 +3757,7 @@ dialog.shared-dialog {
     max-width: 260px;
   }
   .mobility-legend span {
-    font-size: 8px;
+    font-size: 10px;
   }
   .map-area:has(.reveal-control) .mobility-legend {
     display: none;
