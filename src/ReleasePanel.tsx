@@ -58,7 +58,7 @@ export default function ReleasePanel({
   return (
     <>
       <div className="release-kicker">
-        <Sunrise size={15} /> RELEASE 08 · SHAPE THE CITY
+        <Sunrise size={15} /> MISSIONS · FOUR CHALLENGES
       </div>
       <h2 className="mission-heading">
         Give the city

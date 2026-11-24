@@ -29,7 +29,7 @@ export default function GraphicsPanel({
       onCancel={close}
     >
       <div className="modal-head">
-        <span className="eyebrow">RELEASE 08 / SHAPE THE CITY</span>
+        <span className="eyebrow">MONSOON / GRAPHICS</span>
         <button
           className="icon-button"
           aria-label="Close graphics settings"
@@ -104,7 +104,11 @@ export default function GraphicsPanel({
         depth or flood boundaries.
       </p>
       <ContextHelp id="graphics" />
-      <p>Comparison views cap pixel density at 1.25 and shadow maps at 1024, and halve the vehicle count. Shadows refresh when geometry or quality changes.</p>
+      <p>
+        Comparison views cap pixel density at 1.25 and shadow maps at 1024, and
+        halve the vehicle count. Shadows refresh when geometry or quality
+        changes.
+      </p>
     </dialog>
   );
 }

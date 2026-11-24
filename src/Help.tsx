@@ -297,8 +297,8 @@ export function WelcomeGuide({
         <Compass size={28} />
       </div>
       <h3>
-        Your first plan
-        <br />
+        {/* Phones hide the break, so the space must be explicit. */}
+        Your first plan <br />
         starts with one change.
       </h3>
       <p>

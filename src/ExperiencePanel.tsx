@@ -68,7 +68,7 @@ export default function ExperiencePanel({
   return (
     <div className="experience-panel">
       <span className="release-kicker">
-        <Clapperboard size={15} /> RELEASE 08 / SHAPE THE CITY
+        <Clapperboard size={15} /> REPLAY / STORM STORIES
       </span>
       <h2 className="mission-heading">
         Every storm
@@ -202,7 +202,12 @@ export default function ExperiencePanel({
             </button>
           ))}
           {preview && (
-            <section className="demo-preview" ref={previewRef} tabIndex={-1} aria-label="Demo preview">
+            <section
+              className="demo-preview"
+              ref={previewRef}
+              tabIndex={-1}
+              aria-label="Demo preview"
+            >
               <h3>{preview.name}</h3>
               <PlanMap s={preview} />
               <p>

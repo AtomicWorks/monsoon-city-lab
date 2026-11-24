@@ -90,7 +90,7 @@ export default function DistrictPanel({
     Math.max(...r.frames.map((f) => f.metrics.flooded)) / 10000;
   return (
     <div className="district-editor">
-      <span className="release-kicker">RELEASE 08 / SHAPE THE CITY</span>
+      <span className="release-kicker">DISTRICT / LAND USE EDITOR</span>
       <h2 className="mission-heading">
         A different city.
         <br />A different future.
