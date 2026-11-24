@@ -77,7 +77,7 @@ Vercel builds `main` to [monsoon-city-lab.vercel.app](https://monsoon-city-lab.v
 
 ## History
 
-[CHANGELOG.md](CHANGELOG.md) describes every release, from the first guided missions (Release 02) to the district editor (Release 08) and the maintenance release that followed (Release 09).
+[CHANGELOG.md](CHANGELOG.md) describes every release, from the first guided missions (Release 02) to the district editor (Release 08), followed by maintenance releases 09 and 10.
 
 ## License
 

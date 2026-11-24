@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## Release 10: a resting scene and readable text (1.3.0)
+
+No change to the simulation physics or model version (monsoon-1.3).
 
 - **The 3D scene rests when nothing moves.** It used to redraw every frame, even when paused, keeping the graphics card busy and draining laptop and phone batteries. It now draws only while something changes: playback, rain, traffic, the camera gliding, buildings growing, pulses and weather fades. It wakes on any edit, camera drag, hover preview or resize. A new browser test counts WebGL draw calls to check the scene goes idle and wakes again.
 - The accessibility scan waits for panels and dialogs to finish fading in, so it no longer measures half-transparent text.

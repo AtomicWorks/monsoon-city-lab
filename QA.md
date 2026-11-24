@@ -1,5 +1,25 @@
 # MONSOON verification — 2 November 2026
 
+## Release 10 verification — 24 November 2026
+
+Package version 1.3.0, with no change to the simulation physics or model version (monsoon-1.3). All 48 unit tests and three browser tests (smoke, accessibility, idle rendering) pass on the production build locally. CI passed on the idle-rendering and text-size merges to main.
+
+Idle rendering, measured by counting WebGL draw calls in Chromium with software WebGL:
+
+- **Idle:** the production build makes no draw calls while nothing moves; before the change it made about 1,440 every two seconds. On the live site, an idle page made 72 draw calls in three seconds, which is two frames from one wake-up (any app update wakes the scene for two frames), against 1,350 in two seconds during playback.
+- **Waking:** moving the timeline, dragging the camera and playback all draw, then return to idle. In the test browser (about 10 frames a second) the scene settled about 1 second after a timeline change, 2.2 seconds after pausing, and 6.5 seconds after a drag. Camera damping is per frame, so the glide is far shorter at 60 frames a second.
+- **Animations still play:** the landmark camera glide, the placement hover preview, district painting, linked cameras in the comparison view (both views drew after dragging one), and playback with reduced motion, which redraws only when the minute changes (282 draw calls in two seconds against 1,406 with full motion).
+- **Tests still run one at a time.** Running the three browser tests in parallel failed: each keeps its scene busy while it works through the app.
+- The accessibility scan now waits for fade-in animations. Once the scene stopped using the CPU, it reached the Planning lab mid-fade and reported false contrast failures.
+
+Readable text:
+
+- 85 font-size declarations changed: all-caps labels are at least 9 px and other text at least 10 px. Some phone labels were 5–6 px.
+- At 1440 × 900 and 390 × 844 there is no horizontal overflow. On phones the timeline phase labels and the footer wrap onto two lines. Name tags inside the 3D scene are drawn by the scene and are unchanged.
+- Four panels lost a stale "Release 08 / Shape the city" label, and the welcome heading reads correctly on phones ("Your first plan starts with one change"); both were checked in a browser.
+
+No physical-device, Safari, screen-reader or sustained frame-rate benchmark was performed.
+
 ## Release 09 verification — 21 November 2026
 
 A maintenance release (package version 1.2.0) with no change to the simulation physics or model version (monsoon-1.3). Existing mission and conservation fixtures return their original results.
