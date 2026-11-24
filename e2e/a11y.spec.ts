@@ -7,6 +7,24 @@ import { expect, test, type Page } from "@playwright/test";
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"];
 
 async function scan(page: Page, state: string, found: string[]) {
+  // Panels and dialogs fade in; scanning mid-fade measures half-transparent
+  // text. Wait for running finite animations (not spinners or paused ones)
+  // to finish, for at most three seconds.
+  await page.evaluate(() =>
+    Promise.race([
+      Promise.all(
+        document
+          .getAnimations()
+          .filter(
+            (a) =>
+              a.playState === "running" &&
+              a.effect?.getComputedTiming().endTime !== Infinity,
+          )
+          .map((a) => a.finished.catch(() => undefined)),
+      ),
+      new Promise((done) => setTimeout(done, 3000)),
+    ]),
+  );
   const { violations } = await new AxeBuilder({ page })
     .withTags(TAGS)
     .analyze();

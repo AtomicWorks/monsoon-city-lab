@@ -125,7 +125,7 @@ export function mobilityView(scene: T.Scene, map: District = DISTRICT) {
       z: Float64Array,
       dt: number,
       now: number,
-    ) {
+    ): boolean {
       roads.visible = p.layer === "roads" && !!p.depth;
       services.visible = p.layer === "services" && !!p.depth;
       traffic.visible = p.traffic && !!p.depth;
@@ -204,12 +204,16 @@ export function mobilityView(scene: T.Scene, map: District = DISTRICT) {
           if (halos.instanceColor) halos.instanceColor.needsUpdate = true;
         }
       }
-      if (!graph || !depth) return;
+      if (!graph || !depth) return false;
+      // True while a service halo is still pulsing, so the scene keeps
+      // drawing frames until the pulse ends.
+      let pulsing = false;
       if (services.visible) {
         graph.services.forEach((s, k) => {
           const age = (now - transitions[k]) / 700,
             scale =
               p.reduced || age >= 1 ? 1 : 1 + Math.sin(age * Math.PI) * 0.14;
+          if (!p.reduced && age < 1) pulsing = true;
           stamp(
             halos,
             k,
@@ -298,6 +302,7 @@ export function mobilityView(scene: T.Scene, map: District = DISTRICT) {
             true;
         if (body.instanceColor) body.instanceColor.needsUpdate = true;
       }
+      return pulsing;
     },
   };
 }

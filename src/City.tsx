@@ -58,9 +58,13 @@ type Props = {
 };
 export default function City(props: Props) {
   const host = useRef<HTMLDivElement>(null),
-    latest = useRef(props);
+    latest = useRef(props),
+    // Restarts the render loop after it has stopped for lack of motion.
+    wake = useRef(() => {});
   latest.current = props;
   const [error, setError] = useState(false);
+  // Every render may carry new props for the scene to show.
+  useEffect(() => wake.current());
   useEffect(() => {
     if (!host.current) return;
     let renderer: T.WebGLRenderer;
@@ -555,10 +559,12 @@ export default function City(props: Props) {
       if (x < 0 || x >= N || y < 0 || y >= N) return;
       hoverCell = { x, y };
       showGhost(x, y);
+      wake.current();
     };
     const leave = () => {
       hoverCell = null;
       ghost.visible = false;
+      wake.current();
     };
     renderer.domElement.addEventListener("pointermove", move);
     renderer.domElement.addEventListener("pointerleave", leave);
@@ -569,6 +575,7 @@ export default function City(props: Props) {
       controls.target.copy(t);
       controls.update();
       syncing = false;
+      wake.current();
     };
     props.bus.listeners.add(sync);
     controls.addEventListener("change", () => {
@@ -594,6 +601,7 @@ export default function City(props: Props) {
         .add(controls.target);
       fitFactor = next;
       camera.updateProjectionMatrix();
+      wake.current();
     };
     const observer = new ResizeObserver(resize);
     observer.observe(el);
@@ -626,13 +634,25 @@ export default function City(props: Props) {
       destination = null;
       cameraDestination = null;
     });
+    // The loop runs only while something on screen is moving. Each frame
+    // sets `busy` for anything time-based; after two still frames the loop
+    // stops, and wake() restarts it when props, the camera, the pointer or
+    // the canvas size change.
+    let running = false,
+      inFrame = false,
+      stillFrames = 0;
+    const lastCamera = new T.Vector3(),
+      lastTarget = new T.Vector3();
     const animate = () => {
       const p = latest.current;
       frame = requestAnimationFrame(animate);
       const now = performance.now(),
         dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
+      inFrame = true;
+      let busy = false;
       if (!constructionDone && constructionLots.size) {
+        busy = true;
         const t = p.reduced ? 1 : Math.min(1, (now - constructionStart) / 650),
           ease = 1 - Math.pow(1 - t, 3);
         for (const g of growing) {
@@ -719,6 +739,9 @@ export default function City(props: Props) {
       }
       cloud +=
         (p.weather.cloud - cloud) * (p.reduced ? 1 : 1 - Math.exp(-dt * 3));
+      if (Math.abs(p.weather.cloud - cloud) > 0.001) busy = true;
+      // Ripples, splashes, flow particles, drain pulses and traffic.
+      if (!p.reduced && p.animateActivity) busy = true;
       sun.color.copy(warmSun).lerp(rainSun, cloud);
       sun.intensity = 3.1 - cloud * 1.8;
       sky.color.copy(clearSky).lerp(stormSky, cloud);
@@ -770,6 +793,7 @@ export default function City(props: Props) {
           );
       }
       if (destination && cameraDestination) {
+        busy = true;
         const a = p.reduced ? 1 : 1 - Math.exp(-dt * 4);
         controls.target.lerp(destination, a);
         camera.position.lerp(cameraDestination, a);
@@ -798,6 +822,8 @@ export default function City(props: Props) {
       routeDot.visible =
         routeLine.visible && (p.connected ? !p.reduced : blocked !== undefined);
       if (routeDot.visible) {
+        // A connected route's marker travels along it continuously.
+        if (p.connected) busy = true;
         const i = p.connected
           ? p.route[Math.floor(now / 70) % p.route.length]
           : blocked!;
@@ -857,6 +883,7 @@ export default function City(props: Props) {
           p.reduced || !child.userData.birth || age >= 1
             ? 1
             : 1 + Math.sin(Math.min(1, age) * Math.PI) * 0.23;
+        if (scale !== 1) busy = true;
         child.scale.setScalar(scale);
       }
       if (p.depth !== lastDepth || p.difference !== lastDiff) {
@@ -1056,6 +1083,7 @@ export default function City(props: Props) {
         );
       rain.visible = p.rain > 0 && !p.reduced;
       if (rain.visible) {
+        busy = true;
         for (let i = 0; i < preset.drops; i++) {
           const o = i * 6;
           rainPos[o + 1] -= dt * 240;
@@ -1069,8 +1097,20 @@ export default function City(props: Props) {
         rain.material.opacity = Math.min(0.25, p.rain / 400);
       }
       controls.enableDamping = !p.reduced;
-      controls.update();
-      movement.update(
+      // Busy while the camera is still gliding after a drag. Damping keeps
+      // nudging it by invisible amounts for hundreds of frames, so movement
+      // under 0.5 units a frame (about a third of a pixel at the default
+      // distance; the district is 1000 across) counts as still.
+      lastCamera.copy(camera.position);
+      lastTarget.copy(controls.target);
+      if (
+        controls.update() &&
+        camera.position.distanceToSquared(lastCamera) +
+          controls.target.distanceToSquared(lastTarget) >
+          0.25
+      )
+        busy = true;
+      const pulsing = movement.update(
         {
           depth: p.depth,
           minute: p.minute,
@@ -1085,11 +1125,31 @@ export default function City(props: Props) {
         dt,
         now,
       );
+      if (pulsing) busy = true;
       renderer.domElement.style.cursor = p.placing ? "crosshair" : "grab";
       renderer.render(scene, camera);
+      inFrame = false;
+      stillFrames = busy ? 0 : stillFrames + 1;
+      if (stillFrames >= 2) {
+        cancelAnimationFrame(frame);
+        running = false;
+      }
     };
-    animate();
+    wake.current = () => {
+      // controls.update() inside a frame fires "change" for every damping
+      // step; the frame itself decides whether that motion is visible.
+      if (inFrame) return;
+      stillFrames = 0;
+      if (running) return;
+      running = true;
+      // Time spent idle should not count as one long frame.
+      lastTime = performance.now();
+      frame = requestAnimationFrame(animate);
+    };
+    controls.addEventListener("change", wake.current);
+    wake.current();
     return () => {
+      wake.current = () => {};
       cancelAnimationFrame(frame);
       observer.disconnect();
       props.bus.listeners.delete(sync);

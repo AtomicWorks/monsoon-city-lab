@@ -35,6 +35,7 @@ React 19, TypeScript, Vite, three.js, Web Workers and IndexedDB. There is no bac
 
 - The simulation engine (`src/engine.ts`) is independent of React and rendering.
 - The 3D scene and the Planning lab load on demand, so the panels appear before three.js has downloaded.
+- The scene only draws while something on screen is moving, so an idle tab leaves the graphics card alone.
 - Fonts are self-hosted; the app makes no third-party requests.
 
 ## Run it locally
@@ -46,14 +47,14 @@ npm install
 npm run dev
 ```
 
-| Command             | What it does                                                                                                        |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`       | Development server at http://127.0.0.1:5173                                                                         |
-| `npm test`          | Unit tests: water conservation, determinism, missions, storage, sharing and more                                    |
-| `npm run test:e2e`  | Playwright smoke and accessibility tests of the production build (run `npx playwright install chromium` once first) |
-| `npm run typecheck` | Type-checks the app, tests and configs                                                                              |
-| `npm run build`     | Production build in `dist/`                                                                                         |
-| `npm run preview`   | Serves the production build                                                                                         |
+| Command             | What it does                                                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`       | Development server at http://127.0.0.1:5173                                                                                         |
+| `npm test`          | Unit tests: water conservation, determinism, missions, storage, sharing and more                                                    |
+| `npm run test:e2e`  | Playwright smoke, accessibility and idle-rendering tests of the production build (run `npx playwright install chromium` once first) |
+| `npm run typecheck` | Type-checks the app, tests and configs                                                                                              |
+| `npm run build`     | Production build in `dist/`                                                                                                         |
+| `npm run preview`   | Serves the production build                                                                                                         |
 
 GitHub Actions runs the type checks, unit tests, build, smoke test and accessibility scan on every pull request. [QA.md](QA.md) records the browser verification done for each release.
 
